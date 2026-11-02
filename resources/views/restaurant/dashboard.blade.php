@@ -768,7 +768,7 @@ handleRiderAssigned(e) {
                 try {
                     const res = await fetch(
                         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`,
-                        { headers: { 'Accept-Language': 'en', 'User-Agent': 'FoodDash/1.0' } }
+                        { headers: { 'Accept-Language': 'en', 'User-Agent': 'DashBite/1.0' } }
                     );
                     const data = await res.json();
                     if (data && data.display_name) {
@@ -801,7 +801,7 @@ handleRiderAssigned(e) {
 
                 const res = await fetch(
                     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=ph`,
-                    { headers: { 'Accept-Language': 'en', 'User-Agent': 'FoodDash/1.0' } }
+                    { headers: { 'Accept-Language': 'en', 'User-Agent': 'DashBite/1.0' } }
                 );
                 const data = await res.json();
 

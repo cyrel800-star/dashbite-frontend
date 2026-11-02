@@ -15,7 +15,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'FoodDash') }}</title>
+    <title>{{ config('app.name', 'DashBite') }}</title>
 
     {{-- PWA --}}
     <link rel="manifest" href="/manifest.json">
@@ -23,7 +23,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="FoodDash">
+    <meta name="apple-mobile-web-app-title" content="DashBite">
     <link rel="apple-touch-icon" href="/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 
@@ -46,16 +46,16 @@
                     <a href="{{ route('dashboard') }}" class="flex items-center gap-2">
                         @if ($config->hasLogo() || $config->hasLightLogo() || $config->hasDarkLogo())
                             <img src="{{ $config->hasLightLogo() ? $config->light_logo_url : $config->logo_url }}"
-                                alt="{{ config('app.name', 'FoodDash') }}"
+                                alt="{{ config('app.name', 'DashBite') }}"
                                 class="w-auto dark:hidden"
                                 style="height: {{ $config->logo_height_px }}px;">
                             <img src="{{ $config->hasDarkLogo() ? $config->dark_logo_url : ($config->hasLightLogo() ? $config->light_logo_url : $config->logo_url) }}"
-                                alt="{{ config('app.name', 'FoodDash') }}"
+                                alt="{{ config('app.name', 'DashBite') }}"
                                 class="w-auto hidden dark:block"
                                 style="height: {{ $config->logo_height_px }}px;">
                         @else
                             <span class="font-semibold text-lg text-gray-900 dark:text-neutral-100">
-                                {{ config('app.name', 'FoodDash') }}
+                                {{ config('app.name', 'DashBite') }}
                             </span>
                         @endif
                     </a>
@@ -399,17 +399,17 @@
                 <a href="{{ route('customer.restaurants') }}" class="flex items-center gap-2 flex-shrink-0">
                     @if ($config->hasLogo() || $config->hasLightLogo() || $config->hasDarkLogo())
                         <img src="{{ $config->active_logo_url }}"
-                            alt="{{ config('app.name', 'FoodDash') }}"
+                            alt="{{ config('app.name', 'DashBite') }}"
                             class="w-auto dark:hidden"
                             style="height: {{ $config->logo_height_px }}px;"
                             id="light-logo">
                         <img src="{{ $config->hasDarkLogo() ? $config->dark_logo_url : $config->active_logo_url }}"
-                            alt="{{ config('app.name', 'FoodDash') }}"
+                            alt="{{ config('app.name', 'DashBite') }}"
                             class="w-auto hidden dark:block"
                             style="height: {{ $config->logo_height_px }}px;">
                     @else
                         <span class="font-semibold text-lg text-gray-900 dark:text-neutral-100">
-                            {{ config('app.name', 'FoodDash') }}
+                            {{ config('app.name', 'DashBite') }}
                         </span>
                     @endif
                 </a>
@@ -435,9 +435,9 @@
         <template x-if="showInstall">
             <div class="fixed bottom-24 left-4 right-4 md:bottom-4 md:left-auto md:right-4 md:w-80 bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg shadow-lg p-4 z-30">
                 <div class="flex items-start gap-3">
-                    <img src="/icon-192.png" alt="FoodDash" class="w-10 h-10 rounded">
+                    <img src="/icon-192.png" alt="DashBite" class="w-10 h-10 rounded">
                     <div class="flex-1">
-                        <p class="font-semibold text-sm text-gray-900 dark:text-neutral-100">Install FoodDash</p>
+                        <p class="font-semibold text-sm text-gray-900 dark:text-neutral-100">Install DashBite</p>
                         <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">Add to your home screen for quick access.</p>
                     </div>
                     <button @click="dismiss()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">

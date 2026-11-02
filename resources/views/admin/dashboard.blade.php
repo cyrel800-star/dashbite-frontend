@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 {{--
-    FOODDASH COLOR SYSTEM (used as-is)
+    DASHBITE COLOR SYSTEM (used as-is)
     Primary   Orange     #FF6B35  -> key numbers, Approve buttons, Delivered, Commission
     Secondary Dark Gray  #2D2D2D  -> titles, table header, main button, cancelled/rejected
     Background White     #FFFFFF  -> cards and tables

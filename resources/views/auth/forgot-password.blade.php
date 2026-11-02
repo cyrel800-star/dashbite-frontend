@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forgot Password — FoodDash</title>
+    <title>Forgot Password — DashBite</title>
     <link rel="stylesheet" href="{{ asset('food-dash/app.css') }}">
     <script type="module" src="{{ asset('food-dash/app.js') }}"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md bg-white rounded-lg shadow p-6">
-        <h1 class="text-2xl font-bold text-orange-600 mb-6 text-center">🍕 FoodDash</h1>
+        <h1 class="text-2xl font-bold text-orange-600 mb-6 text-center">🍕 DashBite</h1>
         <h2 class="text-lg font-semibold mb-4">Forgot your password?</h2>
         <p class="text-sm text-gray-500 mb-4">
             Enter your email and we'll send you a 6-digit code to reset your password.

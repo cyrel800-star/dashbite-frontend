@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Sign In — {{ config('app.name', 'FoodDash') }}</title>
+    <title>Sign In — {{ config('app.name', 'DashBite') }}</title>
 
     {{-- FORCE LIGHT MODE --}}
     <script>
@@ -27,7 +27,7 @@
 </head>
 
 {{--
-    FOODDASH COLORS
+    DASHBITE COLORS
     Orange #FF6B35 | Dark Gray #2D2D2D | White #FFFFFF
 --}}
 <body class="relative min-h-screen overflow-x-hidden bg-neutral-100 text-[#2D2D2D]">
@@ -65,7 +65,7 @@
                         @if ($config->hasLogo())
                             <span class="inline-flex rounded-2xl bg-white p-2">
                                 <img src="{{ $config->logo_url }}"
-                                     alt="{{ config('app.name', 'FoodDash') }}"
+                                     alt="{{ config('app.name', 'DashBite') }}"
                                      class="w-auto"
                                      style="height: {{ max(36, $config->logo_height_px) }}px;">
                             </span>
@@ -74,7 +74,7 @@
                                 <span class="text-2xl">🍕</span>
                             </div>
                             <span class="text-2xl font-extrabold text-white">
-                                {{ config('app.name', 'FoodDash') }}
+                                {{ config('app.name', 'DashBite') }}
                             </span>
                         @endif
                     </a>
@@ -119,7 +119,7 @@
                 </div>
 
                 <p class="relative mt-8 hidden text-xs text-white/50 md:block">
-                    © {{ date('Y') }} {{ config('app.name', 'FoodDash') }}. All rights reserved.
+                    © {{ date('Y') }} {{ config('app.name', 'DashBite') }}. All rights reserved.
                 </p>
             </aside>
 
@@ -274,7 +274,7 @@
                     </p>
 
                     <p class="mt-6 text-center text-xs text-[#2D2D2D]/40 md:hidden">
-                        © {{ date('Y') }} {{ config('app.name', 'FoodDash') }}. All rights reserved.
+                        © {{ date('Y') }} {{ config('app.name', 'DashBite') }}. All rights reserved.
                     </p>
                 </div>
             </main>

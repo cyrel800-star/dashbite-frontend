@@ -986,7 +986,7 @@ function orderForm(restaurantId, menuItems) {
             this.searching = true;
 
             try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=ph`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'FoodDash/1.0' } });
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=ph`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'DashBite/1.0' } });
                 const data = await res.json();
                 this.suggestions = data || [];
                 this.highlightedIndex = -1;
@@ -1018,7 +1018,7 @@ function orderForm(restaurantId, menuItems) {
                     this.lat = pos.coords.latitude;
                     this.lng = pos.coords.longitude;
                     try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'FoodDash/1.0' } });
+                        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${this.lat}&lon=${this.lng}&zoom=18&addressdetails=1`, { headers: { 'Accept-Language': 'en', 'User-Agent': 'DashBite/1.0' } });
                         const data = await res.json();
                         if (data && data.display_name) this.address = data.display_name;
                     } catch (err) {}

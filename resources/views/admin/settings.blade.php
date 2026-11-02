@@ -254,7 +254,7 @@
                                     <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-2 italic">Using main logo</p>
                                 @else
                                     <span class="font-semibold text-xl text-gray-400">
-                                        {{ config('app.name', 'FoodDash') }}
+                                        {{ config('app.name', 'DashBite') }}
                                     </span>
                                 @endif
                             </div>
@@ -364,7 +364,7 @@
                                     <p class="text-[10px] text-indigo-400 mt-2 italic">Using main logo</p>
                                 @else
                                     <span class="font-semibold text-xl text-gray-400">
-                                        {{ config('app.name', 'FoodDash') }}
+                                        {{ config('app.name', 'DashBite') }}
                                     </span>
                                 @endif
                             </div>
@@ -656,7 +656,7 @@
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500 text-sm font-medium">%</span>
                     </div>
                     <p class="text-[10px] text-gray-400 dark:text-neutral-500 mt-1">
-                        FoodDash earns {{ $config->commission_rate ?? 10 }}% of every food order
+                        DashBite earns {{ $config->commission_rate ?? 10 }}% of every food order
                     </p>
                 </div>
             </div>

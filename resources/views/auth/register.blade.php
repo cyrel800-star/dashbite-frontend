@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Register — {{ config('app.name', 'FoodDash') }}</title>
+    <title>Register — {{ config('app.name', 'DashBite') }}</title>
 
     {{-- Force light mode — plain white, no dark adaptation --}}
     <script>
@@ -36,7 +36,7 @@
             <a href="{{ route('customer.restaurants') }}" class="inline-flex items-center justify-center">
                 @if ($config->hasLogo())
                     <img src="{{ $config->logo_url }}"
-                         alt="{{ config('app.name', 'FoodDash') }}"
+                         alt="{{ config('app.name', 'DashBite') }}"
                          class="w-auto max-h-20 object-contain"
                          style="height: {{ max(56, $config->logo_height_px) }}px;">
                 @else
@@ -47,7 +47,7 @@
                             </svg>
                         </div>
                         <span class="font-bold text-3xl text-zinc-900 tracking-tight">
-                            {{ config('app.name', 'FoodDash') }}
+                            {{ config('app.name', 'DashBite') }}
                         </span>
                     </div>
                 @endif
@@ -421,7 +421,7 @@
         {{-- FOOTER --}}
         {{-- ============================================ --}}
         <p class="text-center text-xs text-zinc-400 mt-6">
-            © {{ date('Y') }} {{ config('app.name', 'FoodDash') }} · All rights reserved
+            © {{ date('Y') }} {{ config('app.name', 'DashBite') }} · All rights reserved
         </p>
 
     </div>

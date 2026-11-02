@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 {{--
-    FOODDASH COLOR SYSTEM (mandatory, used as-is)
+    DASHBITE COLOR SYSTEM (mandatory, used as-is)
     Primary   Orange     #FF6B35  -> actions, active tab, approved, highlights
     Secondary Dark Gray  #2D2D2D  -> table header, titles, secondary buttons
     Background White     #FFFFFF  -> page cards and table body
@@ -79,7 +79,7 @@
 
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                {{-- Dark gray header, same look as the FoodDash sidebar --}}
+                {{-- Dark gray header, same look as the DashBite sidebar --}}
                 <thead class="bg-[#2D2D2D] dark:bg-black/30 border-b-2 border-[#FF6B35]">
                     <tr>
                         <th class="text-left px-5 py-3.5 font-semibold text-white text-sm">Name</th>

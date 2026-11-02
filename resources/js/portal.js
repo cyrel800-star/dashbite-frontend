@@ -223,16 +223,16 @@ export function mountPortal(host, { token, user, onLogout }) {
         .map((part) => part.charAt(0))
         .join('')
         .toUpperCase();
-    document.title = `${roleLabel} panel | FoodDash`;
+    document.title = `${roleLabel} panel | DashBite`;
 
     shadow.innerHTML = `
         <link rel="stylesheet" href="/food-dash/app.css">
         <style>${styles}</style>
         <div class="fd-portal">
             <header class="fd-topbar">
-                <a class="fd-brand" href="/" aria-label="FoodDash home">
-                    <img src="/images/fooddash-mark.svg" alt="">
-                    <span>Food<span class="fd-brand-accent">Dash</span></span>
+                <a class="fd-brand" href="/" aria-label="DashBite home">
+                    <img src="/images/dashbite-mark.svg" alt="">
+                    <span>Dash<span class="fd-brand-accent">Bite</span></span>
                 </a>
                 <div class="fd-top-user">
                     <div class="fd-user-copy">

@@ -1,6 +1,6 @@
 {
-    "name": "FoodDash — Food Delivery",
-    "short_name": "FoodDash",
+    "name": "DashBite — Food Delivery",
+    "short_name": "DashBite",
     "description": "Local food delivery system for restaurants, riders, and customers",
     "start_url": "/",
     "scope": "/",

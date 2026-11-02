@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Reset Code — FoodDash</title>
+    <title>Verify Reset Code — DashBite</title>
     <link rel="stylesheet" href="{{ asset('food-dash/app.css') }}">
     <script type="module" src="{{ asset('food-dash/app.js') }}"></script>
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center py-10">
     <div class="w-full max-w-md bg-white rounded-lg shadow p-6">
 
-        <h1 class="text-2xl font-bold text-orange-600 mb-6 text-center">🍕 FoodDash</h1>
+        <h1 class="text-2xl font-bold text-orange-600 mb-6 text-center">🍕 DashBite</h1>
         <h2 class="text-lg font-semibold mb-2 text-center">Verify your code</h2>
 
         <p class="text-sm text-gray-500 text-center mb-6">
