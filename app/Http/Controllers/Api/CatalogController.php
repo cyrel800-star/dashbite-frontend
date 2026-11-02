@@ -16,7 +16,9 @@ class CatalogController extends Controller
     public function restaurants(Request $request)
     {
         $restaurants = Restaurant::orderable()
-            ->select(['id', 'name', 'address', 'phone', 'is_open'])
+            ->select(['id', 'name', 'address', 'phone', 'cuisine', 'cover_image_url', 'profile_image_url', 'display_badge', 'prep_time_minutes', 'is_open'])
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
             ->orderBy('name')
             ->get();
 
@@ -32,7 +34,10 @@ class CatalogController extends Controller
      */
     public function showRestaurant(int $id)
     {
-        $restaurant = Restaurant::orderable()->find($id);
+        $restaurant = Restaurant::orderable()
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->find($id);
 
         if (! $restaurant) {
             return response()->json([
@@ -47,6 +52,13 @@ class CatalogController extends Controller
                 'name'     => $restaurant->name,
                 'address'  => $restaurant->address,
                 'phone'    => $restaurant->phone,
+                'cuisine' => $restaurant->cuisine,
+                'cover_image_url' => $restaurant->cover_image_url,
+                'profile_image_url' => $restaurant->profile_image_url,
+                'display_badge' => $restaurant->display_badge,
+                'prep_time_minutes' => $restaurant->prep_time_minutes,
+                'rating_avg' => $restaurant->reviews_avg_rating,
+                'rating_count' => $restaurant->reviews_count,
                 'is_open'  => $restaurant->is_open,
             ],
         ]);

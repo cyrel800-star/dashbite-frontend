@@ -1,3 +1,5 @@
+import { renderRestaurantProfile } from './restaurant-profile';
+
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -59,7 +61,7 @@ const styles = `
     .fd-user-copy { text-align: right; line-height: 1.3; }
     .fd-user-name { font-size: 13px; font-weight: 650; }
     .fd-user-role { margin-top: 3px; color: #898781; font-size: 11px; text-transform: capitalize; }
-    .fd-avatar { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 50%; background: #fff0e9; color: #e85c2b; font-weight: 700; }
+    .fd-avatar { display: grid; width: 38px; height: 38px; place-items: center; border: 0; border-radius: 50%; background: #fff0e9; color: #e85c2b; font-weight: 700; }
     .fd-logout { border: 1px solid #e7e5e1; border-radius: 9px; background: #fff; padding: 8px 13px; color: #5b5954; font-size: 12px; font-weight: 600; }
     .fd-logout:hover { border-color: #ff6b35; color: #e85c2b; }
     .fd-frame { display: grid; min-height: calc(100vh - 72px); grid-template-columns: 248px minmax(0, 1fr); }
@@ -113,6 +115,8 @@ const styles = `
     .fd-section-head h2 { margin: 0; color: #33312e; font-size: 14px; font-weight: 700; }
     .fd-menu-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; border-bottom: 1px solid #f0efec; padding: 17px 20px; }
     .fd-menu-row:last-child { border-bottom: 0; }
+    .fd-menu-copy { min-width: 0; }
+    .fd-menu-meta { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 5px; }
     .fd-menu-name { margin: 0; color: #35332f; font-size: 13px; font-weight: 680; }
     .fd-price { margin-top: 5px; color: #e26537; font-size: 12px; font-weight: 700; }
     .fd-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -141,8 +145,10 @@ const styles = `
     .fd-toggle.is-on { background: #49a465; }
     .fd-toggle.is-on::after { transform: translateX(20px); }
     .fd-loading { padding: 36px; color: #89857f; text-align: center; font-size: 12px; }
+    .fd-modal-backdrop { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; overflow-y: auto; background: rgba(25, 24, 22, .58); padding: 20px; }
+    .fd-modal-card { width: min(100%, 520px); margin: auto; }
     @media (max-width: 800px) { .fd-frame { grid-template-columns: 1fr; } .fd-sidebar { flex-direction: row; overflow-x: auto; border-right: 0; border-bottom: 1px solid #eae9e6; padding: 10px 14px; } .fd-side-label, .fd-sidebar-note { display: none; } .fd-nav { width: auto; flex: 0 0 auto; padding: 9px 11px; white-space: nowrap; } .fd-nav-soon { display: none; } .fd-main { padding-top: 26px; } }
-    @media (max-width: 600px) { .fd-topbar { height: 62px; padding: 0 15px; } .fd-brand { font-size: 16px; } .fd-brand img { width: 30px; height: 30px; } .fd-user-copy { display: none; } .fd-frame { min-height: calc(100vh - 62px); } .fd-heading-row { flex-direction: column; margin-bottom: 19px; } .fd-toolbar { align-items: stretch; flex-direction: column; } .fd-search { width: 100%; } .fd-detail-layout { grid-template-columns: 1fr; } .fd-stat-grid { grid-template-columns: 1fr; gap: 9px; } .fd-stat { padding: 13px 15px; } .fd-stat-value { font-size: 19px; } }
+    @media (max-width: 600px) { .fd-topbar { height: 62px; padding: 0 12px; } .fd-top-user { gap: 8px; } .fd-logout { padding: 7px 10px; } .fd-brand { gap: 7px; font-size: 16px; } .fd-brand img { width: 30px; height: 30px; } .fd-user-copy { display: none; } .fd-frame { min-height: calc(100vh - 62px); } .fd-sidebar { padding: 8px 10px; } .fd-nav { gap: 8px; padding: 8px 10px; font-size: 12px; } .fd-nav svg { width: 16px; height: 16px; } .fd-main { padding: 22px 14px 36px; } .fd-heading-row { flex-direction: column; gap: 8px; margin-bottom: 18px; } .fd-title { font-size: 25px; } .fd-toolbar { align-items: stretch; flex-direction: column; gap: 8px; } .fd-search { width: 100%; } .fd-detail-layout { grid-template-columns: 1fr; gap: 12px; } .fd-stat-grid { grid-template-columns: 1fr; gap: 9px; } .fd-stat { padding: 13px 15px; } .fd-stat-value { font-size: 19px; } .fd-menu-row { align-items: flex-start; gap: 9px; padding: 14px 13px; } .fd-menu-row > .fd-button { flex: 0 0 auto; align-self: center; } .fd-section-head { padding: 14px 13px; } .fd-card-pad { padding: 15px; } .fd-inline-actions { gap: 5px; } .fd-inline-actions .fd-button-small { padding: 6px 8px; } .fd-grid { grid-template-columns: 1fr; } }
 `;
 
 const icons = {
@@ -165,7 +171,9 @@ function navigationFor(role) {
     if (role === 'restaurant') {
         return [
             { id: 'menu', label: 'Menu management', icon: icons.menu },
-            { id: 'orders', label: 'Incoming orders', icon: icons.orders, unavailable: true },
+            { id: 'preview', label: 'Menu preview', icon: icons.restaurants },
+            { id: 'orders', label: 'Incoming orders', icon: icons.orders },
+            { id: 'reviews', label: 'Reviews', icon: icons.orders },
         ];
     }
 
@@ -197,8 +205,13 @@ export function mountPortal(host, { token, user, onLogout }) {
         restaurants: [],
         selectedRestaurant: null,
         menu: [],
+        restaurantProfile: null,
+        orders: [],
+        reviews: [],
         basket: {},
+        basketItems: {},
         editingItem: null,
+        showAddItem: false,
         availabilityRequest: null,
     };
 
@@ -226,7 +239,9 @@ export function mountPortal(host, { token, user, onLogout }) {
                         <div class="fd-user-name">${escapeHtml(user.name)}</div>
                         <div class="fd-user-role">${escapeHtml(roleLabel)} panel</div>
                     </div>
-                    <div class="fd-avatar" aria-hidden="true">${escapeHtml(initials)}</div>
+                    ${user.role === 'restaurant'
+                ? `<button class="fd-avatar" type="button" data-action="open-profile" aria-label="Restaurant profile settings" title="Restaurant profile settings">${escapeHtml(initials)}</button>`
+                : `<div class="fd-avatar" aria-hidden="true">${escapeHtml(initials)}</div>`}
                     <button class="fd-logout" type="button" data-action="logout">Sign out</button>
                 </div>
             </header>
@@ -274,10 +289,12 @@ export function mountPortal(host, { token, user, onLogout }) {
         ));
 
         if (!matches.length) {
-            return `<div class="fd-card fd-empty">${state.restaurants.length ? 'No restaurants match your search.' : 'No restaurants are currently open for ordering.'}</div>`;
+            return state.restaurants.length
+                ? `<div class="fd-card fd-empty" role="status"><h2 class="fd-card-title">No restaurants found</h2><p class="fd-muted">Try another restaurant name or location.</p><button class="fd-button fd-button-secondary fd-button-small" style="margin-top:14px" type="button" data-action="clear-search">Clear search</button></div>`
+                : `<div class="fd-card fd-empty" role="status"><h2 class="fd-card-title">No restaurants available right now</h2><p class="fd-muted">There are no open restaurants to browse. Please check back soon.</p><button class="fd-button fd-button-secondary fd-button-small" style="margin-top:14px" type="button" data-action="retry">Refresh restaurants</button></div>`;
         }
 
-        return `<div class="fd-grid">${matches.map((restaurant) => `
+        return `<div class="fd-grid" aria-label="Available restaurants">${matches.map((restaurant) => `
             <article class="fd-card fd-restaurant-card">
                 <div class="fd-restaurant-art" aria-hidden="true">
                     <svg fill="none" viewBox="0 0 48 48" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20h30l-3 20H12L9 20Zm7 0v-5a8 8 0 0 1 16 0v5M18 29h12"/></svg>
@@ -287,7 +304,7 @@ export function mountPortal(host, { token, user, onLogout }) {
                     <p class="fd-muted">${escapeHtml(restaurant.address || 'Address not provided')}</p>
                     <div class="fd-card-bottom">
                         <span class="fd-status${restaurant.is_open ? '' : ' is-closed'}">${restaurant.is_open ? 'Open now' : 'Closed'}</span>
-                        <button class="fd-button fd-button-small" type="button" data-action="open-restaurant" data-id="${Number(restaurant.id)}">View menu</button>
+                        <button class="fd-button fd-button-small" type="button" data-action="open-restaurant" data-id="${Number(restaurant.id)}" ${restaurant.is_open ? '' : 'disabled'}>View menu</button>
                     </div>
                 </div>
             </article>
@@ -302,13 +319,13 @@ export function mountPortal(host, { token, user, onLogout }) {
                 ${heading('Restaurant menu', escapeHtml(restaurant.name), escapeHtml(restaurant.address || 'Menu and item availability'))}
                 <div class="fd-detail-layout">
                     <section class="fd-card">
-                        <div class="fd-section-head"><h2>Available menu items</h2><span class="fd-count">${state.menu.length} items</span></div>
+                        <div class="fd-section-head"><h2>Menu</h2><span class="fd-count">${state.menu.length} available ${state.menu.length === 1 ? 'item' : 'items'}</span></div>
                         ${state.menu.length ? state.menu.map((item) => `
                             <div class="fd-menu-row">
-                                <div><h3 class="fd-menu-name">${escapeHtml(item.name)}</h3><p class="fd-muted">${escapeHtml(item.description || 'Made fresh to order')}</p><div class="fd-price">${currency(item.price)}</div></div>
-                                <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="add-basket" data-id="${Number(item.id)}">Add</button>
+                                <div class="fd-menu-copy"><h3 class="fd-menu-name">${escapeHtml(item.name)}</h3><p class="fd-muted">${escapeHtml(item.description || 'Made fresh to order')}</p><div class="fd-menu-meta"><span class="fd-price">${currency(item.price)}</span><span class="fd-tag ${item.is_available ? 'is-available' : 'is-unavailable'}">${item.is_available ? 'Available' : 'Unavailable'}</span></div></div>
+                                <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="add-basket" data-id="${Number(item.id)}" ${item.is_available ? '' : 'disabled'}>${item.is_available ? 'Add' : 'Unavailable'}</button>
                             </div>
-                        `).join('') : '<div class="fd-empty">No available menu items at this restaurant.</div>'}
+                        `).join('') : '<div class="fd-empty" role="status"><h3 class="fd-card-title">No available items</h3><p class="fd-muted">This restaurant has no menu items available right now.</p></div>'}
                     </section>
                     <aside class="fd-card fd-card-pad">
                         <div class="fd-kicker">Your basket</div>
@@ -324,7 +341,10 @@ export function mountPortal(host, { token, user, onLogout }) {
             ${heading('Customer workspace', 'Find your next favorite', 'Browse restaurants currently open for ordering.')}
             <div class="fd-toolbar">
                 <input class="fd-search" type="search" data-search placeholder="Search restaurants or locations…" value="${escapeHtml(state.query)}" aria-label="Search restaurants">
-                <span class="fd-count">${state.restaurants.length} restaurants</span>
+                <span class="fd-count" aria-live="polite">${state.restaurants.filter((restaurant) => {
+                    const query = state.query.trim().toLowerCase();
+                    return !query || `${restaurant.name} ${restaurant.address}`.toLowerCase().includes(query);
+                }).length} of ${state.restaurants.length} restaurants</span>
             </div>
             ${restaurantCards()}`;
     }
@@ -333,7 +353,7 @@ export function mountPortal(host, { token, user, onLogout }) {
         return Object.entries(state.basket)
             .filter(([, quantity]) => quantity > 0)
             .map(([id, quantity]) => {
-                const item = state.menu.find((entry) => String(entry.id) === id);
+                const item = state.basketItems[id];
                 return item ? { ...item, quantity } : null;
             })
             .filter(Boolean);
@@ -350,11 +370,12 @@ export function mountPortal(host, { token, user, onLogout }) {
             <div style="margin-top:15px">
                 ${lines.map((item) => `
                     <div class="fd-menu-row" style="padding:12px 0">
-                        <div><h3 class="fd-menu-name">${escapeHtml(item.name)}</h3><p class="fd-muted">${item.quantity} × ${currency(item.price)}</p></div>
+                        <div><h3 class="fd-menu-name">${escapeHtml(item.name)}</h3><p class="fd-muted">${item.quantity} × ${currency(item.price)}${item.restaurant_name ? ` · ${escapeHtml(item.restaurant_name)}` : ''}</p></div>
                         <div class="fd-inline-actions">
                             <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="basket-dec" data-id="${Number(item.id)}" aria-label="Remove one ${escapeHtml(item.name)}">−</button>
                             <span class="fd-count">${item.quantity}</span>
                             <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="basket-inc" data-id="${Number(item.id)}" aria-label="Add one ${escapeHtml(item.name)}">+</button>
+                            <button class="fd-button fd-button-danger fd-button-small" type="button" data-action="basket-remove" data-id="${Number(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from basket">Remove</button>
                         </div>
                     </div>
                 `).join('')}
@@ -363,12 +384,17 @@ export function mountPortal(host, { token, user, onLogout }) {
     }
 
     function customerBasket() {
+        const lines = basketLines();
+        const itemCount = lines.reduce((sum, item) => sum + item.quantity, 0);
+
         return `
             ${heading('Customer workspace', 'Your basket', 'Review the items you have added while browsing.')}
             <div class="fd-detail-layout">
                 <section class="fd-card">
-                    <div class="fd-section-head"><h2>Selected items</h2><span class="fd-count">${basketLines().reduce((sum, item) => sum + item.quantity, 0)} items</span></div>
-                    ${basketLines().length ? basketSummary() : '<div class="fd-empty">Your basket is empty. Browse a restaurant menu to add items.</div>'}
+                    <div class="fd-section-head"><h2>Selected items</h2><span class="fd-count">${itemCount} ${itemCount === 1 ? 'item' : 'items'}</span></div>
+                    ${lines.length
+                        ? basketSummary()
+                        : '<div class="fd-empty" role="status"><h3 class="fd-card-title">Your basket is empty</h3><p class="fd-muted">Browse a restaurant menu to add items to your basket.</p><button class="fd-button fd-button-secondary fd-button-small" style="margin-top:14px" type="button" data-action="go-restaurants">Browse restaurants</button></div>'}
                 </section>
                 <aside class="fd-card fd-card-pad">
                     <div class="fd-kicker">Next step</div>
@@ -414,25 +440,107 @@ export function mountPortal(host, { token, user, onLogout }) {
                 <div class="fd-card fd-stat"><div class="fd-stat-label">Available now</div><div class="fd-stat-value">${state.menu.filter((item) => item.is_available).length}</div></div>
                 <div class="fd-card fd-stat"><div class="fd-stat-label">Unavailable</div><div class="fd-stat-value">${state.menu.filter((item) => !item.is_available).length}</div></div>
             </div>
-            <div class="fd-detail-layout">
-                <section class="fd-card">
-                    <div class="fd-section-head"><h2>Your menu items</h2><button class="fd-button fd-button-small" type="button" data-action="new-item">＋ Add item</button></div>
-                    ${state.menu.length ? state.menu.map(menuItemCard).join('') : '<div class="fd-empty">No menu items yet. Add your first item using the form.</div>'}
-                </section>
-                <aside class="fd-card fd-card-pad">
-                    <div class="fd-kicker">Add to menu</div>
-                    <h2 class="fd-card-title" style="margin:5px 0 14px">New item</h2>
-                    <form data-form="add-menu-item">
-                        <div class="fd-form-grid">
-                            <label class="fd-form-field is-wide"><span class="fd-label">Item name</span><input class="fd-input" name="name" maxlength="255" placeholder="e.g. House burger" required></label>
-                            <label class="fd-form-field is-wide"><span class="fd-label">Description</span><textarea class="fd-textarea" name="description" placeholder="Describe this item"></textarea></label>
-                            <label class="fd-form-field is-wide"><span class="fd-label">Price (₱)</span><input class="fd-input" name="price" type="number" step="0.01" min="0.01" placeholder="0.00" required></label>
+            <section class="fd-card">
+                <div class="fd-section-head">
+                    <h2>Your menu items</h2>
+                    <button class="fd-button fd-button-small" style="width:38px;height:38px;padding:0" type="button" data-action="new-item" aria-label="Add item" title="Add item">
+                        <svg aria-hidden="true" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+                        </svg>
+                    </button>
+                </div>
+                ${state.showAddItem ? `
+                    <div class="fd-modal-backdrop" data-action="cancel-new-item">
+                        <section class="fd-card fd-modal-card" role="dialog" aria-modal="true" aria-labelledby="add-menu-title">
+                            <div class="fd-section-head">
+                                <div><div class="fd-kicker">Add to menu</div><h2 id="add-menu-title" class="fd-card-title" style="margin-top:5px">New item</h2></div>
+                                <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="cancel-new-item" aria-label="Close add item form">✕</button>
+                            </div>
+                            <form class="fd-card-pad" data-form="add-menu-item">
+                                <div class="fd-form-grid">
+                                    <label class="fd-form-field is-wide"><span class="fd-label">Item name</span><input class="fd-input" name="name" maxlength="255" placeholder="e.g. House burger" required></label>
+                                    <label class="fd-form-field is-wide"><span class="fd-label">Description</span><textarea class="fd-textarea" name="description" placeholder="Describe this item"></textarea></label>
+                                    <label class="fd-form-field is-wide"><span class="fd-label">Price (₱)</span><input class="fd-input" name="price" type="number" step="0.01" min="0.01" placeholder="0.00" required></label>
+                                </div>
+                                <div class="fd-form-actions">
+                                    <button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="cancel-new-item">Cancel</button>
+                                    <button class="fd-button fd-button-small" type="submit">Add menu item</button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                ` : ''}
+                ${state.menu.length ? state.menu.map(menuItemCard).join('') : '<div class="fd-empty">No menu items yet. Use the plus button to add your first item.</div>'}
+            </section>`;
+    }
+
+    function restaurantPreview() {
+        const restaurant = state.restaurantProfile;
+        if (!restaurant) {
+            return '<div class="fd-card fd-empty">Restaurant profile is not available.</div>';
+        }
+
+        const availableItems = state.menu.filter((item) => item.is_available);
+
+        return `
+            ${heading('Customer view', escapeHtml(restaurant.name), 'A read-only preview of your public restaurant listing and menu.')}
+            <section class="fd-card" style="overflow:hidden">
+                ${restaurant.cover_image_url ? `<img src="${escapeHtml(restaurant.cover_image_url)}" alt="" style="display:block;width:100%;height:180px;object-fit:cover">` : '<div class="fd-restaurant-art" style="height:180px">DashBite</div>'}
+                <div class="fd-card-pad">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        ${restaurant.profile_image_url ? `<img src="${escapeHtml(restaurant.profile_image_url)}" alt="" style="width:52px;height:52px;border-radius:12px;object-fit:cover">` : ''}
+                        <div>
+                            <h2 class="fd-card-title">${escapeHtml(restaurant.name)}</h2>
+                            <p class="fd-muted">${escapeHtml(restaurant.cuisine || 'Cuisine not set')} · ${Number(restaurant.prep_time_minutes || 20)} min</p>
                         </div>
-                        <div class="fd-form-actions"><button class="fd-button" type="submit">Add menu item</button></div>
-                    </form>
-                    <div class="fd-notice" style="margin:17px 0 0">Order management is unavailable because no order-list or update API is provided.</div>
-                </aside>
-            </div>`;
+                    </div>
+                    <p class="fd-muted" style="margin-top:12px">${escapeHtml(restaurant.address || '')}</p>
+                    <div style="margin-top:18px;border-top:1px solid #efede9;padding-top:15px">
+                        <h3 class="fd-card-title">Available menu</h3>
+                        ${availableItems.length
+                ? availableItems.map((item) => `<div class="fd-menu-row" style="padding-left:0;padding-right:0"><div><strong class="fd-menu-name">${escapeHtml(item.name)}</strong><p class="fd-muted">${escapeHtml(item.description || '')}</p></div><strong class="fd-price">${currency(item.price)}</strong></div>`).join('')
+                : '<div class="fd-empty">No available menu items.</div>'}
+                    </div>
+                </div>
+            </section>`;
+    }
+
+    function restaurantOrders() {
+        return `
+            ${heading('Restaurant workspace', 'Incoming orders', 'Review customer orders and advance them through preparation.')}
+            <section class="fd-card">
+                <div class="fd-section-head"><h2>Recent orders</h2><button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="refresh-orders">Refresh</button></div>
+                ${state.orders.length ? state.orders.map((order) => {
+                const status = typeof order.status === 'string' ? order.status : order.status?.value;
+                const next = ({ pending: 'accepted', accepted: 'preparing', preparing: 'ready', ready: 'completed' })[status];
+                return `<article class="fd-card-pad" style="border-bottom:1px solid #efede9">
+                    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap">
+                        <div><h3 class="fd-card-title">Order #${Number(order.id)} · ${escapeHtml(order.customer?.name || 'Customer')}</h3><p class="fd-muted">${escapeHtml(new Date(order.created_at).toLocaleString())} · ${escapeHtml(order.delivery_address)}</p></div>
+                        <span class="fd-tag ${status === 'completed' ? 'is-available' : ''}">${escapeHtml(status)}</span>
+                    </div>
+                    <p class="fd-muted" style="margin-top:10px">${(order.items || []).map((item) => `${Number(item.quantity)} × ${escapeHtml(item.item_name)}`).join(' · ')}</p>
+                    <div class="fd-card-bottom"><span class="fd-muted">${escapeHtml(String(order.payment_method).toUpperCase())} · ${currency(order.total)}</span>
+                        <div class="fd-inline-actions">
+                            ${next ? `<button class="fd-button fd-button-small" type="button" data-action="update-order-status" data-id="${Number(order.id)}" data-status="${next}">Mark ${next}</button>` : ''}
+                            ${['pending', 'accepted'].includes(status) ? `<button class="fd-button fd-button-danger fd-button-small" type="button" data-action="update-order-status" data-id="${Number(order.id)}" data-status="cancelled">Cancel</button>` : ''}
+                        </div>
+                    </div>
+                </article>`;
+            }).join('') : '<div class="fd-empty">No orders yet. Customer orders will appear here.</div>'}
+            </section>`;
+    }
+
+    function restaurantReviews() {
+        const average = state.reviews.length
+            ? state.reviews.reduce((sum, review) => sum + Number(review.rating), 0) / state.reviews.length
+            : 0;
+
+        return `
+            ${heading('Restaurant workspace', 'Customer reviews', 'Feedback from customers who completed an order.')}
+            <div class="fd-stat-grid"><div class="fd-card fd-stat"><div class="fd-stat-label">Reviews shown</div><div class="fd-stat-value">${state.reviews.length}</div></div><div class="fd-card fd-stat"><div class="fd-stat-label">Average rating</div><div class="fd-stat-value">${state.reviews.length ? `${average.toFixed(1)} / 5` : '—'}</div></div></div>
+            <section class="fd-card">
+                ${state.reviews.length ? state.reviews.map((review) => `<article class="fd-card-pad" style="border-bottom:1px solid #efede9"><div style="display:flex;justify-content:space-between;gap:12px"><strong class="fd-menu-name">${escapeHtml(review.customer?.name || 'Customer')}</strong><span class="fd-price">${Number(review.rating)} / 5</span></div>${review.comment ? `<p class="fd-muted" style="margin-top:8px">${escapeHtml(review.comment)}</p>` : ''}<time class="fd-muted" datetime="${escapeHtml(review.created_at)}">${escapeHtml(new Date(review.created_at).toLocaleDateString())}</time></article>`).join('') : '<div class="fd-empty">No customer reviews yet.</div>'}
+            </section>`;
     }
 
     function riderAvailability() {
@@ -496,6 +604,14 @@ export function mountPortal(host, { token, user, onLogout }) {
             content.innerHTML = customerBasket();
         } else if (user.role === 'restaurant' && state.page === 'menu') {
             content.innerHTML = restaurantMenu();
+        } else if (user.role === 'restaurant' && state.page === 'preview') {
+            content.innerHTML = restaurantPreview();
+        } else if (user.role === 'restaurant' && state.page === 'orders') {
+            content.innerHTML = restaurantOrders();
+        } else if (user.role === 'restaurant' && state.page === 'profile') {
+            content.innerHTML = renderRestaurantProfile(state.restaurantProfile, escapeHtml, heading);
+        } else if (user.role === 'restaurant' && state.page === 'reviews') {
+            content.innerHTML = restaurantReviews();
         } else if (user.role === 'rider' && state.page === 'availability') {
             content.innerHTML = riderAvailability();
         } else {
@@ -542,8 +658,35 @@ export function mountPortal(host, { token, user, onLogout }) {
         content.innerHTML = '<div class="fd-loading">Loading your menu…</div>';
 
         try {
-            const payload = await request('/api/restaurant/menu', token);
-            state.menu = Array.isArray(payload?.data) ? payload.data : [];
+            const [menuPayload, profilePayload] = await Promise.all([
+                request('/api/restaurant/menu', token),
+                request('/api/restaurant/profile', token),
+            ]);
+            state.menu = Array.isArray(menuPayload?.data) ? menuPayload.data : [];
+            state.restaurantProfile = profilePayload?.data || null;
+            render();
+        } catch (error) {
+            content.innerHTML = `<div class="fd-card fd-empty">${escapeHtml(error.message)}<p><button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="retry">Try again</button></p></div>`;
+        }
+    }
+
+    async function loadRestaurantPage(page) {
+        content.innerHTML = '<div class="fd-loading">Loading restaurant workspace…</div>';
+        try {
+            if (page === 'orders') {
+                const payload = await request('/api/restaurant/orders', token);
+                state.orders = Array.isArray(payload?.data) ? payload.data : [];
+            } else if (page === 'reviews') {
+                const payload = await request('/api/restaurant/reviews', token);
+                state.reviews = Array.isArray(payload?.data) ? payload.data : [];
+            } else {
+                const [profilePayload, menuPayload] = await Promise.all([
+                    request('/api/restaurant/profile', token),
+                    request('/api/restaurant/menu', token),
+                ]);
+                state.restaurantProfile = profilePayload?.data || null;
+                state.menu = Array.isArray(menuPayload?.data) ? menuPayload.data : [];
+            }
             render();
         } catch (error) {
             content.innerHTML = `<div class="fd-card fd-empty">${escapeHtml(error.message)}<p><button class="fd-button fd-button-secondary fd-button-small" type="button" data-action="retry">Try again</button></p></div>`;
@@ -551,13 +694,14 @@ export function mountPortal(host, { token, user, onLogout }) {
     }
 
     function changePage(page) {
-        if (!nav.some((item) => item.id === page)) {
+        if (!nav.some((item) => item.id === page) && !(user.role === 'restaurant' && page === 'profile')) {
             return;
         }
 
         state.page = page;
         state.query = '';
         state.editingItem = null;
+        state.showAddItem = false;
         state.selectedRestaurant = null;
         setNotice();
 
@@ -565,6 +709,8 @@ export function mountPortal(host, { token, user, onLogout }) {
             loadRestaurants();
         } else if (page === 'menu') {
             loadRestaurantMenuManagement();
+        } else if (user.role === 'restaurant') {
+            loadRestaurantPage(page);
         } else {
             render();
         }
@@ -588,7 +734,22 @@ export function mountPortal(host, { token, user, onLogout }) {
         }
     });
 
+    shadow.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && state.showAddItem) {
+            state.showAddItem = false;
+            render();
+            shadow.querySelector('[data-action="new-item"]')?.focus();
+        }
+    });
+
     shadow.addEventListener('click', async (event) => {
+        if (event.target.matches('.fd-modal-backdrop')) {
+            state.showAddItem = false;
+            render();
+            shadow.querySelector('[data-action="new-item"]')?.focus();
+            return;
+        }
+
         const button = event.target.closest('button');
         if (!button || state.busy) {
             return;
@@ -613,6 +774,11 @@ export function mountPortal(host, { token, user, onLogout }) {
                     setNotice(error.message, 'error');
                 }
                 break;
+            case 'open-profile':
+                if (user.role === 'restaurant') {
+                    changePage('profile');
+                }
+                break;
             case 'open-restaurant':
                 if (Number.isInteger(id) && id > 0) {
                     await loadRestaurantMenu(id);
@@ -620,8 +786,15 @@ export function mountPortal(host, { token, user, onLogout }) {
                 break;
             case 'back-restaurants':
                 state.selectedRestaurant = null;
-                state.basket = {};
                 await loadRestaurants();
+                break;
+            case 'clear-search':
+                state.query = '';
+                render();
+                shadow.querySelector('[data-search]')?.focus();
+                break;
+            case 'go-restaurants':
+                changePage('restaurants');
                 break;
             case 'retry':
                 if (user.role === 'customer') {
@@ -631,13 +804,40 @@ export function mountPortal(host, { token, user, onLogout }) {
                         await loadRestaurants();
                     }
                 } else if (user.role === 'restaurant') {
-                    await loadRestaurantMenuManagement();
+                    if (state.page === 'menu') {
+                        await loadRestaurantMenuManagement();
+                    } else {
+                        await loadRestaurantPage(state.page);
+                    }
                 }
                 break;
+            case 'refresh-orders':
+                await loadRestaurantPage('orders');
+                break;
+            case 'update-order-status': {
+                state.busy = true;
+                try {
+                    await request(`/api/restaurant/orders/${id}/status`, token, {
+                        method: 'PATCH',
+                        body: { status: button.dataset.status },
+                    });
+                    setNotice('Order status updated.', 'success');
+                    await loadRestaurantPage('orders');
+                } catch (error) {
+                    setNotice(error.message, 'error');
+                } finally {
+                    state.busy = false;
+                }
+                break;
+            }
             case 'add-basket': {
                 const item = state.menu.find((entry) => entry.id === id);
-                if (item) {
+                if (item?.is_available) {
                     state.basket[id] = (state.basket[id] || 0) + 1;
+                    state.basketItems[id] = {
+                        ...item,
+                        restaurant_name: state.selectedRestaurant?.name || '',
+                    };
                     setNotice(`${item.name} added to your local basket.`, 'success');
                     render();
                 }
@@ -649,10 +849,27 @@ export function mountPortal(host, { token, user, onLogout }) {
                 break;
             case 'basket-dec':
                 state.basket[id] = Math.max(0, (state.basket[id] || 0) - 1);
+                if (state.basket[id] === 0) {
+                    delete state.basket[id];
+                    delete state.basketItems[id];
+                }
+                render();
+                break;
+            case 'basket-remove':
+                delete state.basket[id];
+                delete state.basketItems[id];
+                setNotice('Item removed from your basket.', 'success');
                 render();
                 break;
             case 'new-item':
+                state.showAddItem = true;
+                render();
                 shadow.querySelector('[data-form="add-menu-item"] [name="name"]')?.focus();
+                break;
+            case 'cancel-new-item':
+                state.showAddItem = false;
+                render();
+                shadow.querySelector('[data-action="new-item"]')?.focus();
                 break;
             case 'edit-item':
                 state.editingItem = id;
@@ -732,6 +949,39 @@ export function mountPortal(host, { token, user, onLogout }) {
         state.busy = true;
         const formData = new FormData(form);
 
+        if (form.dataset.form === 'restaurant-profile') {
+            const openingHours = {};
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach((day) => {
+                openingHours[day] = String(formData.get(`hours[${day}]`) || '').trim();
+            });
+            const body = {
+                name: String(formData.get('name') || '').trim(),
+                address: String(formData.get('address') || '').trim(),
+                phone: String(formData.get('phone') || '').trim() || null,
+                cuisine: String(formData.get('cuisine') || '').trim() || null,
+                cover_image_url: String(formData.get('cover_image_url') || '').trim() || null,
+                profile_image_url: String(formData.get('profile_image_url') || '').trim() || null,
+                display_badge: String(formData.get('display_badge') || '').trim() || null,
+                prep_time_minutes: Number(formData.get('prep_time_minutes')),
+                opening_hours: openingHours,
+            };
+
+            try {
+                const payload = await request('/api/restaurant/profile', token, { method: 'PUT', body });
+                if (!payload?.data) {
+                    throw new Error('The server did not return the updated restaurant profile.');
+                }
+                state.restaurantProfile = payload.data;
+                setNotice('Restaurant profile saved.', 'success');
+                render();
+            } catch (error) {
+                setNotice(error.message, 'error');
+            } finally {
+                state.busy = false;
+            }
+            return;
+        }
+
         if (form.dataset.form === 'add-menu-item') {
             const body = {
                 name: String(formData.get('name') || '').trim(),
@@ -747,6 +997,7 @@ export function mountPortal(host, { token, user, onLogout }) {
                 }
                 state.menu.push(payload.data);
                 state.menu.sort((first, second) => first.name.localeCompare(second.name));
+                state.showAddItem = false;
                 setNotice('Menu item added.', 'success');
                 render();
             } catch (error) {

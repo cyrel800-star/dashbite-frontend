@@ -17,7 +17,7 @@ class AccountAccessTest extends TestCase
     public function test_unapproved_rider_denied_and_availability_unchanged(): void
     {
         $rider = User::factory()->create([
-            'role'           => UserRole::Rider,
+            'role' => UserRole::Rider,
             'account_status' => AccountStatus::Pending,
         ]);
 
@@ -37,12 +37,12 @@ class AccountAccessTest extends TestCase
     public function test_pending_restaurant_denied_operational(): void
     {
         $rest = User::factory()->create([
-            'role'           => UserRole::Restaurant,
+            'role' => UserRole::Restaurant,
             'account_status' => AccountStatus::Pending,
         ]);
         Sanctum::actingAs($rest);
 
-        $this->postJson('/api/restaurant/orders/1/accept')
+        $this->getJson('/api/restaurant/orders')
             ->assertStatus(403)
             ->assertJson(['error' => 'account_pending']);
     }
@@ -51,7 +51,7 @@ class AccountAccessTest extends TestCase
     public function test_role_mismatch_returns_403(): void
     {
         $customer = User::factory()->create([
-            'role'           => UserRole::Customer,
+            'role' => UserRole::Customer,
             'account_status' => AccountStatus::Approved,
         ]);
         Sanctum::actingAs($customer);
@@ -65,25 +65,37 @@ class AccountAccessTest extends TestCase
     public function test_pending_rider_login_shows_account_state(): void
     {
         $rider = User::factory()->create([
-            'role'           => UserRole::Rider,
+            'role' => UserRole::Rider,
             'account_status' => AccountStatus::Pending,
-            'password'       => bcrypt('secret123'),
+            'password' => bcrypt('secret123'),
         ]);
 
         $this->postJson('/api/auth/login', [
-            'email'    => $rider->email,
+            'email' => $rider->email,
             'password' => 'secret123',
         ])->assertOk()
-          ->assertJsonPath('user.account_status', 'pending')
-          ->assertJsonPath('user.role', 'rider');
+            ->assertJsonPath('user.account_status', 'pending')
+            ->assertJsonPath('user.role', 'rider');
     }
 
     /** PDF W1.03 — generic error on invalid creds */
     public function test_login_invalid_credentials_generic_error(): void
     {
-        $this->postJson('/api/auth/login', [
-            'email'    => 'nobody@example.com',
+        $unknownEmail = $this->postJson('/api/auth/login', [
+            'email' => 'nobody@example.com',
             'password' => 'wrong',
-        ])->assertStatus(422);
+        ])->assertStatus(422)->json();
+
+        User::factory()->create([
+            'email' => 'known@example.com',
+            'password' => bcrypt('correct-password'),
+        ]);
+
+        $wrongPassword = $this->postJson('/api/auth/login', [
+            'email' => 'known@example.com',
+            'password' => 'wrong',
+        ])->assertStatus(422)->json();
+
+        $this->assertSame($unknownEmail, $wrongPassword);
     }
 }

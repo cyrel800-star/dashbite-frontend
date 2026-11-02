@@ -1,40 +1,44 @@
-@extends('layouts.app')
+@extends('layouts.customer')
 
 @section('content')
-<div x-data="restaurantList()" x-init="init()" class="mx-auto flex max-w-6xl flex-col gap-7">
+<div x-data="restaurantList()" x-init="init()" class="restaurant-page mx-auto flex max-w-7xl flex-col gap-9">
 
     {{-- ============================================ --}}
     {{-- HERO HEADER WITH SEARCH --}}
     {{-- ============================================ --}}
-    <section class="order-0 grid gap-6 rounded-2xl border border-neutral-200 bg-[#2d2d2d] p-5 dark:border-neutral-200 dark:bg-white sm:p-7 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)] lg:items-end">
-    <div>
-            <p class="mb-2 flex items-center gap-2 text-xs font-semibold uppercase text-orange-600 dark:text-orange-700">
-                <span class="h-2 w-2 rounded-full bg-orange-500"></span>
-                Discover local favorites
+    <section class="discovery-hero order-0 grid gap-8 rounded-[1.75rem] p-6 sm:p-9 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:items-end">
+        <div class="hero-copy relative z-10">
+            <p class="hero-eyebrow mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em]">
+                <span class="h-2 w-2 rounded-full bg-orange-400"></span>
+                Your neighborhood, served
             </p>
-           <h1 class="text-2xl font-bold leading-tight text-white dark:text-neutral-900 sm:text-3xl">Restaurants</h1>
-        <div class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-neutral-300 dark:text-neutral-700">
-            <span><strong class="text-white dark:text-neutral-900">{{ $restaurants->count() }}</strong> results</span>
-            <span class="h-4 border-l border-neutral-500 dark:border-neutral-300"></span>
-            <span><strong class="text-white dark:text-neutral-900">{{ isset($cuisines) ? $cuisines->count() : 0 }}</strong> cuisines</span>
+            <h1 class="max-w-2xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-white sm:text-5xl lg:text-6xl">
+                Good things<br><span class="hero-heading-accent">are on the menu.</span>
+            </h1>
+            <p class="hero-subtitle mt-4 max-w-md text-sm leading-6 sm:text-base">
+                Find a new regular, revisit an old favorite, and make tonight taste a little different.
+            </p>
+            <div class="mt-7 flex flex-wrap gap-2">
+                <span class="hero-stat"><strong>{{ $restaurants->count() }}</strong> places to explore</span>
+                <span class="hero-stat"><strong>{{ isset($cuisines) ? $cuisines->count() : 0 }}</strong> food styles</span>
+            </div>
         </div>
-    </div>
 
         {{-- SEARCH BAR --}}
-        <form method="GET" action="{{ route('customer.restaurants') }}" class="w-full">
-            <label for="restaurant-search" class="mb-2 block text-xs font-semibold text-neutral-300 dark:text-neutral-700">Find a place to eat</label>
-            <div class="flex items-center gap-1 rounded-xl border border-neutral-200 bg-neutral-50 p-1.5 transition focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-500/15 dark:border-[#404040] dark:bg-[#0a0a0a]">
-                <svg class="ml-2 h-5 w-5 shrink-0 text-neutral-400 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <form method="GET" action="{{ route('customer.restaurants') }}" class="hero-search relative z-10 w-full">
+            <label for="restaurant-search" class="mb-3 block text-xs font-bold uppercase tracking-[0.15em] text-white/75">What are you craving?</label>
+            <div class="search-control flex items-center gap-1 rounded-2xl border border-white/15 bg-white p-1.5 transition focus-within:ring-4 focus-within:ring-orange-400/25">
+                <svg class="ml-3 h-5 w-5 shrink-0 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input id="restaurant-search" type="text" name="search" value="{{ request('search') }}"
                        placeholder="Restaurant or location"
-                       class="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-0 dark:text-white dark:placeholder-neutral-500">
+                       class="min-w-0 flex-1 border-0 bg-transparent px-2 py-3.5 text-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-0">
 
                 @if (request('search'))
                     <a href="{{ route('customer.restaurants', ['cuisine' => request('cuisine')]) }}"
                        aria-label="Clear search" title="Clear search"
-                       class="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-200 hover:text-neutral-700 dark:hover:bg-[#262626] dark:hover:text-white">
+                       class="rounded-lg p-2 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -46,11 +50,11 @@
                 @endif
 
                 <button type="submit" aria-label="Search restaurants"
-                        class="inline-flex shrink-0 items-center gap-2 rounded-lg bg-orange-600 px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#0a0a0a]">
+                        class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#FF6B35] px-4 py-3.5 text-sm font-bold text-white transition hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span class="hidden sm:inline">Search</span>
+                    <span class="hidden sm:inline">Find a place</span>
                 </button>
             </div>
         </form>
@@ -59,19 +63,19 @@
     {{-- ============================================ --}}
     {{-- RECOMMENDED MENU CAROUSEL --}}
     {{-- ============================================ --}}
-    <section x-data="menuCarousel()" x-init="init()" class="order-2 space-y-3">
+    <section x-data="menuCarousel()" x-init="init()" class="curated-section order-2 space-y-4">
 
         {{-- HEADER --}}
         <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-200 bg-orange-50 dark:border-orange-900/60 dark:bg-orange-950/30">
-                    <svg class="h-5 w-5 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <div class="section-stamp flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FF6B35]">
+                    <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                     </svg>
                 </div>
                 <div>
-                    <h2 class="font-bold text-neutral-900 dark:text-white">Recommended for you</h2>
-                    <p class="text-xs text-neutral-500 dark:text-neutral-400">Fresh picks from open restaurants</p>
+                    <h2 class="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white">A few good picks</h2>
+                    <p class="text-sm text-neutral-500 dark:text-neutral-400">A rotating taste of what’s cooking nearby</p>
                 </div>
             </div>
         </div>
@@ -104,37 +108,36 @@
                     @mouseup="onDragEnd()"
                     @touchstart.passive="pause(); onDragStart()"
                     @touchend.passive="resume(); onDragEnd()"
-                    class="flex gap-3 overflow-x-auto scroll-smooth py-1 carousel-scroll">
+                    class="flex gap-4 overflow-x-auto scroll-smooth py-2 carousel-scroll">
 
                     <template x-for="(item, index) in items" :key="item.id + '-' + index">
                         <a :href="item.restaurant_url"
-                           class="group w-44 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-neutral-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md dark:border-[#262626] dark:bg-[#141414] dark:hover:border-orange-800/50 sm:w-48">
+                           class="pick-card group w-48 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-neutral-200 bg-white transition duration-200 hover:-translate-y-1 hover:shadow-lg dark:border-[#262626] dark:bg-[#141414] sm:w-52">
 
                             {{-- IMAGE --}}
-                            <div class="relative aspect-square overflow-hidden bg-neutral-100 dark:bg-[#141414]">
+                            <div class="pick-art relative aspect-[1.18/1] overflow-hidden">
                                 <template x-if="item.image_url">
                                     <img :src="item.image_url"
                                          :alt="item.name"
                                          class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                                 </template>
                                 <template x-if="!item.image_url">
-                                    <div class="absolute inset-0 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center">
-                                        <svg class="w-12 h-12 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                        </svg>
+                                    <div class="pick-art-fallback absolute inset-0 flex items-center justify-center">
+                                        <span class="pick-art-orbit"></span>
+                                        <span class="pick-art-letter" x-text="item.name?.slice(0, 1) || 'D'"></span>
                                     </div>
                                 </template>
 
                                 {{-- RESTAURANT BADGE --}}
                                 <div class="absolute bottom-2 left-2 right-2 z-10">
-                                    <span class="inline-block w-full bg-black/70 backdrop-blur text-white text-[10px] font-semibold px-2 py-1 rounded-full truncate text-center"
+                                    <span class="inline-block max-w-full truncate rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-bold tracking-wide text-neutral-800 shadow-sm backdrop-blur"
                                           x-text="item.restaurant_name"></span>
                                 </div>
                             </div>
 
                             {{-- BODY --}}
-                            <div class="p-3">
-                                <p class="font-bold text-sm text-neutral-900 dark:text-white line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition"
+                            <div class="p-4">
+                                <p class="font-semibold text-sm text-neutral-900 dark:text-white line-clamp-1 group-hover:text-orange-700 dark:group-hover:text-orange-300 transition"
                                    x-text="item.name"></p>
 
                                 <template x-if="item.description">
@@ -157,7 +160,7 @@
     {{-- ============================================ --}}
     @if (isset($cuisines) && $cuisines->count() > 0)
         <section class="order-1 min-w-0 space-y-3">
-            <h2 class="text-base font-bold text-neutral-900 dark:text-white">Your favorite cuisines</h2>
+            <h2 class="text-base font-semibold text-neutral-900 dark:text-white">Browse by food style</h2>
             <div class="cuisine-scroll -mx-4 flex flex-nowrap items-center gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
                 <a href="{{ route('customer.restaurants', ['search' => request('search')]) }}"
                    aria-current="{{ !request('cuisine') ? 'true' : 'false' }}"
@@ -213,10 +216,11 @@
     {{-- HEADER WITH VIEW TOGGLE --}}
     {{-- ============================================ --}}
     @if ($restaurants->count() > 0)
-        <div class="order-4 flex items-center justify-between gap-4 border-b border-neutral-200 pb-4 dark:border-[#262626]">
+        <div class="restaurant-results-heading order-4 flex items-center justify-between gap-4 border-b border-neutral-200 pb-4 dark:border-[#262626]">
             <div class="min-w-0">
-                <h2 class="font-bold text-neutral-900 dark:text-white">All restaurants</h2>
-                <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ $restaurants->count() }} available</p>
+                <p class="mb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-orange-700 dark:text-orange-300">The local list</p>
+                <h2 class="text-2xl font-semibold tracking-tight text-neutral-900 dark:text-white">Places worth a visit</h2>
+                <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{{ $restaurants->count() }} spots for your next meal</p>
             </div>
 
             {{-- VIEW TOGGLE --}}
@@ -279,7 +283,7 @@
         {{-- ============================================ --}}
            <div x-show="viewMode === 'grid'"
                x-cloak
-               class="order-5 grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+               class="restaurant-grid order-5 grid grid-cols-1 gap-5 min-[520px]:grid-cols-2 xl:grid-cols-3">
             @foreach ($restaurants as $restaurant)
                 @php
                     $isOpen = $restaurant->isOpenNow();
@@ -287,7 +291,7 @@
                 @endphp
 
                 <div x-data="favoriteToggle({{ $restaurant->id }}, {{ $isFav ? 'true' : 'false' }})"
-                     class="relative group h-full">
+                     class="restaurant-card group relative h-full">
 
                     {{-- HEART BUTTON --}}
                     @auth
@@ -296,7 +300,7 @@
                                 :disabled="loading"
                                 :title="isFavorite ? 'Remove from favorites' : 'Add to favorites'"
                                 :class="loading ? 'opacity-50' : ''"
-                                class="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white/95 shadow-sm transition hover:scale-105 active:scale-95 dark:border-[#404040] dark:bg-[#0a0a0a]/95">
+                                class="favorite-button absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/95 shadow-sm transition hover:scale-105 active:scale-95 dark:border-[#404040] dark:bg-[#0a0a0a]/95">
 
                             <template x-if="isFavorite">
                                 <svg class="w-5 h-5 text-red-500 fill-red-500" viewBox="0 0 24 24" fill="currentColor">
@@ -316,7 +320,7 @@
                     @guest
                         <a href="{{ route('login') }}"
                            title="Sign in to save favorites"
-                           class="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white/95 shadow-sm transition hover:scale-105 active:scale-95 dark:border-[#404040] dark:bg-[#0a0a0a]/95">
+                           class="favorite-button absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/70 bg-white/95 shadow-sm transition hover:scale-105 active:scale-95 dark:border-[#404040] dark:bg-[#0a0a0a]/95">
                             <svg class="w-5 h-5 text-neutral-400 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
@@ -325,17 +329,18 @@
 
                     {{-- CARD --}}
                     <a href="{{ route('customer.restaurants.show', $restaurant) }}"
-                              class="flex h-full flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white transition duration-200 hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:border-[#262626] dark:bg-[#141414] dark:hover:border-orange-800/50 dark:focus-visible:ring-offset-[#0a0a0a]">
+                              class="restaurant-card-link flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-neutral-200 bg-white transition duration-200 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:border-[#262626] dark:bg-[#141414] dark:focus-visible:ring-offset-[#0a0a0a]">
 
                         {{-- COVER IMAGE --}}
-                        <div class="relative aspect-[4/3] overflow-hidden shrink-0">
+                        <div class="restaurant-art relative aspect-[1.45/1] overflow-hidden shrink-0">
                             @if ($restaurant->cover_image_url)
                                 <img src="{{ $restaurant->cover_image_url }}"
                                      alt="{{ $restaurant->name }}"
                                      class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                             @else
-                                <div class="absolute inset-0 bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center">
-                                    <svg class="w-16 h-16 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <div class="restaurant-art-fallback absolute inset-0 flex items-center justify-center">
+                                    <span class="art-sun"></span>
+                                    <svg class="restaurant-art-icon relative z-10 h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                 </div>
@@ -344,12 +349,12 @@
                             {{-- STATUS BADGE --}}
                             <div class="absolute top-2 left-2 z-10">
                                 @if ($isOpen)
-                                    <span class="inline-flex items-center gap-1 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur text-orange-600 dark:text-orange-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm border border-orange-200 dark:border-orange-800">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                                    <span class="status-pill inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-800 shadow-sm backdrop-blur dark:bg-[#0a0a0a]/95 dark:text-white">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-[#FF6B35] animate-pulse"></span>
                                         Open
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 bg-white/95 dark:bg-[#0a0a0a]/95 backdrop-blur text-neutral-600 dark:text-neutral-400 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm border border-neutral-200 dark:border-[#262626]">
+                                    <span class="status-pill inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-600 shadow-sm backdrop-blur dark:bg-[#0a0a0a]/95 dark:text-neutral-400">
                                         <span class="w-1.5 h-1.5 rounded-full bg-neutral-400"></span>
                                         Closed
                                     </span>
@@ -358,28 +363,28 @@
                         </div>
 
                         {{-- BODY --}}
-                        <div class="p-3 flex-1 flex flex-col">
-                            <div class="flex items-start justify-between gap-2 mb-1">
-                                <h2 class="font-bold text-neutral-900 dark:text-white text-sm leading-tight line-clamp-1 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition">
+                        <div class="restaurant-card-body flex flex-1 flex-col p-5">
+                            <div class="mb-2 flex items-start justify-between gap-2">
+                                <h2 class="font-semibold text-lg leading-tight tracking-tight text-neutral-900 transition group-hover:text-orange-700 dark:text-white dark:group-hover:text-orange-300">
                                     {{ $restaurant->name }}
                                 </h2>
                             </div>
 
                             @if ($restaurant->display_badge)
-                                <span class="mb-2 inline-block w-fit rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase text-orange-700 dark:border-orange-900/60 dark:bg-orange-950/30 dark:text-orange-300">
+                                <span class="mb-3 inline-block w-fit rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-orange-800 dark:bg-orange-950/30 dark:text-orange-300">
                                     {{ $restaurant->display_badge }}
                                 </span>
                             @endif
 
-                            <div class="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 mb-2">
-                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <div class="mb-4 flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
+                                <svg class="h-4 w-4 flex-shrink-0 text-orange-700 dark:text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                                 <span class="line-clamp-1">{{ $restaurant->address }}</span>
                             </div>
 
-                            <div class="flex items-center justify-between pt-2 border-t border-neutral-100 dark:border-[#262626] mt-auto">
+                            <div class="card-meta mt-auto flex items-center justify-between border-t border-neutral-100 pt-4 dark:border-[#262626]">
                                 <div class="flex items-center gap-1 text-xs">
                                     @if ($restaurant->rating_count > 0)
                                         <svg class="w-3.5 h-3.5 text-orange-500 fill-orange-500" viewBox="0 0 20 20">
@@ -409,7 +414,7 @@
         {{-- LIST VIEW --}}
         {{-- ============================================ --}}
            <div x-show="viewMode === 'list'" x-cloak
-               class="order-5 overflow-hidden rounded-xl border border-neutral-200 bg-white dark:border-[#262626] dark:bg-[#141414]">
+               class="restaurant-list-view order-5 overflow-hidden rounded-2xl border border-neutral-200 bg-white dark:border-[#262626] dark:bg-[#141414]">
             @foreach ($restaurants as $restaurant)
                 @php
                     $isOpen = $restaurant->isOpenNow();
@@ -417,7 +422,7 @@
                 @endphp
 
                 <div x-data="favoriteToggle({{ $restaurant->id }}, {{ $isFav ? 'true' : 'false' }})"
-                     class="relative flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-[#0a0a0a] transition border-b border-neutral-100 dark:border-[#262626] last:border-0 group">
+                     class="restaurant-list-row relative flex items-center gap-4 px-4 py-4 transition hover:bg-orange-50/60 dark:hover:bg-[#0a0a0a] border-b border-neutral-100 dark:border-[#262626] last:border-0 group">
 
                     <a href="{{ route('customer.restaurants.show', $restaurant) }}"
                        class="flex items-center gap-3 flex-1 min-w-0">
@@ -522,30 +527,13 @@
 
 </div>
 
-<div x-data="themeToggle()" x-init="init()" class="fixed bottom-20 right-4 z-40 md:bottom-6 md:right-6">
-    <button type="button"
-            @click="setTheme(theme === 'dark' ? 'light' : 'dark')"
-            :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-            :aria-pressed="theme === 'dark'"
-            :title="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
-            class="flex h-12 w-12 items-center justify-center rounded-full bg-[#FF6B35] text-white shadow-lg ring-1 ring-black/10 transition hover:scale-105 hover:bg-orange-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#FF6B35]/40">
-        <svg x-show="theme !== 'dark'" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-        <svg x-show="theme === 'dark'" x-cloak class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-    </button>
-</div>
-
 {{-- ============================================ --}}
 {{-- FLOATING LOGIN MODAL (guests only) --}}
 {{-- Colors: Orange #FF6B35 | Dark Gray #2D2D2D | White #FFFFFF --}}
 {{-- Light mode = white card | Dark mode = near-black card --}}
 {{-- ============================================ --}}
 @guest
-@php $loginConfig = \App\Models\SystemConfig::current(); @endphp
-<div x-data="loginModal({{ $errors->any() ? 'true' : 'false' }})"
+<div x-data="loginModal({{ ($errors->any() || request('login') === '1') ? 'true' : 'false' }})"
      x-init="init()"
      x-show="open"
      x-cloak
@@ -575,27 +563,20 @@
             <div class="absolute -bottom-24 -right-16 h-64 w-64 rounded-full border-[24px] border-[#FF6B35]/25"></div>
 
             <div class="relative">
-                @if ($loginConfig->hasLogo())
-                    <span class="inline-flex rounded-2xl bg-white p-2">
-                        <img src="{{ $loginConfig->logo_url }}" alt="{{ config('app.name', 'FoodDash') }}" class="w-auto"
-                             style="height: {{ max(36, $loginConfig->logo_height_px) }}px;">
-                    </span>
-                @else
-                    <span class="text-2xl font-extrabold">{{ config('app.name', 'FoodDash') }}</span>
-                @endif
+                <span class="text-2xl font-extrabold">DashBite</span>
             </div>
 
             <div class="relative mt-16">
                 <h2 class="text-4xl font-extrabold leading-tight">
-                    Good Food.<br><span class="text-[#FF6B35]">Faster Delivery.</span>
+                    Make room<br><span class="text-[#FF6B35]">for a good meal.</span>
                 </h2>
                 <p class="mt-3 max-w-xs text-sm text-white/70">
-                    Order from the best local restaurants and get it delivered to your door.
+                    Find a nearby kitchen, pick something you love, and let dinner take care of itself.
                 </p>
             </div>
 
             <p class="relative mt-8 text-xs text-white/50">
-                © {{ date('Y') }} {{ config('app.name', 'FoodDash') }}. All rights reserved.
+                © {{ date('Y') }} DashBite. All rights reserved.
             </p>
         </aside>
 
@@ -604,7 +585,7 @@
             <div class="w-full">
                 <div class="mb-6">
                     <h2 class="text-3xl font-extrabold text-[#2D2D2D] dark:text-white">Welcome!</h2>
-                    <p class="mt-1 text-sm text-[#2D2D2D]/60 dark:text-white/60">Sign in to continue ordering.</p>
+                    <p class="mt-1 text-sm text-[#2D2D2D]/60 dark:text-white/60">Sign in to continue exploring DashBite.</p>
                 </div>
 
                 @if (session('success'))
@@ -619,13 +600,14 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('login') }}" class="space-y-4" x-data="{ showPassword: false }">
+                <form method="POST" action="{{ route('login.store') }}" class="space-y-4"
+                      x-data="{ showPassword: false }" @submit.prevent="signIn($event)">
                     @csrf
 
                     {{-- EMAIL --}}
                     <div>
                         <label for="modal-email" class="mb-1.5 block text-sm font-semibold text-[#2D2D2D] dark:text-white">Email address</label>
-                        <input type="email" id="modal-email" name="email" value="{{ old('email') }}" required
+                        <input type="email" id="modal-email" name="email" required
                                placeholder="you@example.com"
                                class="w-full rounded-xl border-2 border-[#2D2D2D]/15 bg-white px-4 py-3 text-sm text-[#2D2D2D] placeholder-[#2D2D2D]/40 transition focus:border-[#FF6B35] focus:outline-none focus:ring-4 focus:ring-[#FF6B35]/20 dark:border-white/15 dark:bg-[#0a0a0a] dark:text-white dark:placeholder-white/30 dark:focus:border-[#FF6B35]">
                     </div>
@@ -634,10 +616,6 @@
                     <div>
                         <div class="mb-1.5 flex items-center justify-between">
                             <label for="modal-password" class="block text-sm font-semibold text-[#2D2D2D] dark:text-white">Password</label>
-                            <a href="{{ route('password.request') }}"
-                               class="text-xs font-bold text-[#2D2D2D] underline decoration-[#FF6B35] decoration-2 underline-offset-4 transition hover:text-[#FF6B35] dark:text-white dark:hover:text-[#FF6B35]">
-                                Forgot password?
-                            </a>
                         </div>
                         <div class="relative">
                             <input :type="showPassword ? 'text' : 'password'" id="modal-password" name="password" required
@@ -661,23 +639,17 @@
                     </div>
 
                     {{-- SIGN IN (orange in both modes) --}}
-                    <button type="submit"
-                            class="flex w-full items-center justify-center rounded-xl bg-[#FF6B35] py-3.5 text-sm font-bold text-white shadow-md shadow-[#FF6B35]/30 transition hover:brightness-95 active:scale-[0.98]">
-                        Sign in
+                    <button type="submit" :disabled="loading"
+                            class="flex w-full items-center justify-center rounded-xl bg-[#FF6B35] py-3.5 text-sm font-bold text-white shadow-md shadow-[#FF6B35]/30 transition hover:brightness-95 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70">
+                        <span x-text="loading ? 'Signing in…' : 'Sign in'">Sign in</span>
                     </button>
+                    <p x-show="error" x-text="error" role="alert"
+                       class="rounded-xl border-l-4 border-[#FF6B35] bg-[#2D2D2D] p-3 text-sm text-white"></p>
                 </form>
 
-                {{-- DIVIDER --}}
-                <div class="relative my-5">
-                    <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-[#2D2D2D]/10 dark:border-white/10"></div></div>
-                    <div class="relative flex justify-center text-xs"><span class="bg-white px-3 font-medium text-[#2D2D2D]/50 dark:bg-[#141414] dark:text-white/50">or</span></div>
-                </div>
-
-                {{-- CREATE ACCOUNT --}}
-                <a href="{{ route('register') }}"
-                   class="flex w-full items-center justify-center rounded-xl border-2 border-[#2D2D2D] py-3 text-sm font-bold text-[#2D2D2D] transition hover:bg-[#2D2D2D] hover:text-white active:scale-[0.98] dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-[#2D2D2D]">
-                    Create an account
-                </a>
+                <p class="mt-4 text-center text-xs text-[#2D2D2D]/55 dark:text-white/55">
+                    One sign in for every DashBite account.
+                </p>
 
                 {{-- CONTINUE AS GUEST --}}
                 <button type="button" @click="open = false"
@@ -693,6 +665,10 @@
 
 @push('scripts')
 <style>
+    [x-cloak] {
+        display: none !important;
+    }
+
     /* Hide scrollbar for Chrome, Safari, Edge */
     .carousel-scroll::-webkit-scrollbar {
         display: none;
@@ -721,6 +697,8 @@
 function loginModal(startOpen) {
     return {
         open: startOpen,
+        loading: false,
+        error: '',
 
         init() {
             // Any link to /login opens the floating panel instead
@@ -743,7 +721,58 @@ function loginModal(startOpen) {
             });
 
             if (this.open) document.body.classList.add('overflow-hidden');
-        }
+        },
+
+        async signIn(event) {
+            if (this.loading) return;
+
+            const form = event.target;
+            const formData = new FormData(form);
+            this.loading = true;
+            this.error = '';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    body: JSON.stringify({
+                        email: formData.get('email'),
+                        password: formData.get('password'),
+                        remember: formData.get('remember') === 'on',
+                    }),
+                });
+                const payload = await response.json();
+
+                if (!response.ok) {
+                    const validationMessage = payload.errors
+                        ? Object.values(payload.errors).flat().find((message) => typeof message === 'string')
+                        : null;
+                    throw new Error(validationMessage || payload.message || 'Sign in failed. Check your details and try again.');
+                }
+
+                if (payload.role === 'customer') {
+                    window.location.reload();
+                    return;
+                }
+
+                if (!payload.token || !payload.user?.role || !payload.user?.account_status) {
+                    throw new Error('The server returned an unexpected response. Please try again.');
+                }
+
+                sessionStorage.setItem('dashbite.auth.token', payload.token);
+                sessionStorage.setItem('dashbite.auth.user', JSON.stringify(payload.user));
+                this.open = false;
+                window.dispatchEvent(new CustomEvent('dashbite:show-portal', { detail: payload }));
+            } catch (error) {
+                this.error = error.message || 'Unable to reach the sign-in service. Check your connection and try again.';
+            } finally {
+                this.loading = false;
+            }
+        },
     }
 }
 

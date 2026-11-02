@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\RestaurantMenuController;
+use App\Http\Controllers\Api\RestaurantOperationsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\OtpController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,12 @@ Route::prefix('catalog')->group(function () {
 // RESTAURANT PORTAL (protected — role:restaurant + approved)
 // ============================================
 Route::middleware(['auth:sanctum', 'role:restaurant', 'approved'])->prefix('restaurant')->group(function () {
+    Route::get('profile', [RestaurantOperationsController::class, 'profile']);
+    Route::put('profile', [RestaurantOperationsController::class, 'updateProfile']);
+    Route::get('orders', [RestaurantOperationsController::class, 'orders']);
+    Route::patch('orders/{id}/status', [RestaurantOperationsController::class, 'updateOrderStatus']);
+    Route::get('reviews', [RestaurantOperationsController::class, 'reviews']);
+
     // Menu management
     Route::get('menu', [RestaurantMenuController::class, 'index']);
     Route::post('menu/items', [RestaurantMenuController::class, 'store']);
@@ -39,8 +46,6 @@ Route::middleware(['auth:sanctum', 'role:restaurant', 'approved'])->prefix('rest
     Route::patch('menu/items/{id}/availability', [RestaurantMenuController::class, 'toggleAvailability']);
     Route::delete('menu/items/{id}', [RestaurantMenuController::class, 'destroy']);
 
-    // Orders (stub — W4.01 will implement)
-    Route::post('orders/{id}/accept', fn () => response()->json(['ok' => true]));
 });
 
 // ============================================

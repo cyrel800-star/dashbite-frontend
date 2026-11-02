@@ -22,14 +22,36 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
-        'role'              => UserRole::class,
-        'account_status'    => AccountStatus::class,
+        'password' => 'hashed',
+        'role' => UserRole::class,
+        'account_status' => AccountStatus::class,
     ];
 
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
+    }
+
+    public function favoriteRestaurants()
+    {
+        return $this->belongsToMany(Restaurant::class, 'restaurant_user_favorites')->withTimestamps();
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function restaurantReviews()
+    {
+        return $this->hasMany(RestaurantReview::class);
+    }
+
+    public function hasFavorited(Restaurant $restaurant): bool
+    {
+        return $this->favoriteRestaurants()
+            ->where('restaurants.id', $restaurant->id)
+            ->exists();
     }
 
     public function isApproved(): bool

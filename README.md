@@ -88,8 +88,8 @@ Lahat ng endpoints ay naka-prefix sa `/api`.
 - `disabled` — restricted, parang pending pero mas malala (admin deliberately disabled).
 
 ### Roles
-- `customer` — browse restaurants and menus; checkout/order APIs are not implemented yet
-- `restaurant` — manage menu items; order management is not implemented yet
+- `customer` — browse restaurants and menus, place orders, and review completed orders
+- `restaurant` — manage menu items and profile, preview the public menu, manage incoming orders, and read reviews
 - `rider` — submit an availability request; delivery offers/history are not implemented yet
 - `admin` — account-approval API stub; no admin dashboard UI/API is connected
 
@@ -101,12 +101,14 @@ The login page at `/` now opens a role-specific panel after API login. The UI st
 
 | Role | Connected UI | Current limitation |
 |---|---|---|
-| Customer | Browse/search open restaurants, view available menus, and create a temporary basket in the current browser session | There is no checkout or customer order API. Basket contents are not submitted or saved. |
-| Restaurant | View own menu; add, edit, delete, and toggle menu-item availability | There is no order list or order update API. |
+| Customer | Browse/search restaurants, view menus, and place orders from the public restaurant page; review completed orders | GCash and Maya payment references are collected but are not processed by a payment gateway. |
+| Restaurant | Manage own menu and profile; preview the customer-facing menu; view incoming orders and reviews; advance order status | Profile image fields accept URLs; image uploads are not provided. |
 | Rider | Submit an availability request | The current endpoint only acknowledges the request; it does not persist rider availability. Delivery offers/history are not available. |
 | Admin | Sign-in is supported | No admin panel is connected; the existing approval endpoint is only a stub. |
 
-Unavailable actions are shown as unavailable rather than simulated. The rider's displayed availability is temporary and resets when the panel is reloaded or signed out. These panels do not add web routes or backend functionality; they use the API endpoints listed below.
+Unavailable actions are shown as unavailable rather than simulated. The rider's displayed availability is temporary and resets when the panel is reloaded or signed out. The role panels use the API endpoints listed below.
+
+The customer restaurant-browsing page is available at **`/restaurants`**. It supports restaurant/address search, cuisine filters, menu recommendations, restaurant details, customer favorites, checkout, and reviews for completed orders. Restaurant staff use the role-aware sign-in at `/` to manage their profile, menu, incoming orders, and reviews. The configured delivery fee is read from `ORDER_DELIVERY_FEE` (defaults to `0`).
 
 ---
 
