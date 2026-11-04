@@ -11,6 +11,22 @@ import {
 import { formatAmount } from "./lib/format.js";
 import { getApiBaseUrl, setApiBaseUrl } from "./lib/api.js";
 import { CustomerOrderForm, RiderOfferForm } from "./components/Forms.jsx";
+import LoginFlow from "./components/LoginFlow.jsx";
+import SignupFlow from "./components/SignupFlow.jsx";
+import AdminApprovalQueue from "./components/AdminApprovalQueue.jsx";
+import AdminLogin from "./components/admin/AdminLogin.jsx";
+import AdminPortal from "./components/admin/AdminPortal.jsx";
+import RestaurantPortal from "./components/restaurant/RestaurantPortal.jsx";
+import CustomerPortal from "./components/customer/CustomerPortal.jsx";
+import RiderPortal from "./components/rider/RiderPortal.jsx";
+import {
+  clearAdminMonitoring,
+  clearPreviewSession,
+  getPreviewSession,
+  isAdminMonitoring,
+  startAdminMonitoring,
+} from "./lib/previewSession.js";
+import { hasAdminPreviewSession } from "./lib/adminPreviewAuth.js";
 
 const roleConfig = {
   CUSTOMER: {
@@ -39,7 +55,7 @@ const roleConfig = {
     title: "Operations overview",
     subtitle: "Monitor accounts, order flow, and payment reconciliation.",
     icon: "▦",
-    metrics: [["Pending accounts", "4", "Approval queue", "♙"], ["Active orders", "12", "Currently in progress", "▤"], ["Flagged payments", "2", "Needs review", "$"], ["Restaurants", "36", "Illustrative total", "⌂"]],
+    metrics: [["Pending accounts", "0", "Approval queue", "♙"], ["Active orders", "12", "Currently in progress", "▤"], ["Flagged payments", "2", "Needs review", "$"], ["Restaurants", "36", "Illustrative total", "⌂"]],
   },
 };
 
@@ -56,8 +72,29 @@ const sampleOffers = [
 ];
 
 function readRoute() {
-  const route = window.location.hash.match(/^#\/(CUSTOMER|RESTAURANT|RIDER|ADMIN)$/i);
-  return route ? route[1].toUpperCase() : null;
+  const route = window.location.hash.match(/^#\/(CUSTOMER|RESTAURANT|RIDER|ADMIN|LOGIN|SIGNUP)(?:\/([^#]*))?$/i);
+  if (!route) return null;
+  const role = route[1].toUpperCase();
+  const page = route[2]?.split("/")[0].toUpperCase();
+  return role === "ADMIN" && page === "LOGIN" ? "ADMIN_LOGIN" : role;
+}
+
+function readAuthorizedRoute() {
+  const route = readRoute();
+  if (!route || ["LOGIN", "SIGNUP", "ADMIN_LOGIN"].includes(route)) clearAdminMonitoring();
+  if (route === "ADMIN" && !hasAdminPreviewSession()) {
+    if (window.location.hash !== "#/ADMIN/LOGIN") window.location.hash = "#/ADMIN/LOGIN";
+    return "ADMIN_LOGIN";
+  }
+  if (["CUSTOMER", "RESTAURANT", "RIDER"].includes(route)) {
+    if (isAdminMonitoring()) return route;
+    const session = getPreviewSession(route);
+    if (!session || session.status !== "APPROVED") {
+      if (window.location.hash !== "#/LOGIN") window.location.hash = "#/LOGIN";
+      return "LOGIN";
+    }
+  }
+  return route;
 }
 
 function Brand({ home = false }) {
@@ -81,7 +118,11 @@ function HomePage() {
     <div className="home-page">
       <header className="topbar home-topbar">
         <Brand home />
-        <span className="version-pill">CORE CONTRACT <strong>v1.0</strong></span>
+        <div className="home-header-actions">
+          <span className="version-pill">CORE CONTRACT <strong>v1.0</strong></span>
+          <a className="button button-outline home-login-button" href="#/LOGIN">Sign in <span aria-hidden="true">→</span></a>
+          <a className="button button-primary home-signup-button" href="#/SIGNUP">Sign up</a>
+        </div>
       </header>
       <main className="home-main">
         <section className="hero">
@@ -106,13 +147,13 @@ function HomePage() {
             <span className="preview-label">FRONTEND PREVIEW</span>
           </div>
           <div className="role-grid">
-            {cards.map(([role, iconClass, detail]) => <a className="role-card" href={`#/${role}`} key={role}>
+            {cards.map(([role, iconClass, detail]) => <a className="role-card" href={role === "ADMIN" ? "#/ADMIN/LOGIN" : `#/${role}`} key={role}>
               <span className={`role-icon ${iconClass}`} aria-hidden="true">{roleConfig[role].icon}</span>
               <span className="role-card-copy"><strong>{roleConfig[role].label}</strong><small>{detail}</small></span>
               <span className="role-arrow" aria-hidden="true">↗</span>
             </a>)}
           </div>
-          <p className="preview-disclaimer"><strong>Preview only.</strong> Sample dashboard data is illustrative. API actions require a reachable backend; sign-in is not wired because the v1.0 contract does not define its request fields.</p>
+          <p className="preview-disclaimer"><strong>Preview only.</strong> Sample dashboard data is illustrative. Sign-in demonstrates the email and OTP flow locally; no code is emailed and no authentication API is called.</p>
         </section>
       </main>
       <footer className="home-footer"><span>© 2026 DashBite</span><span>Made for good food days <span className="footer-heart">♥</span></span></footer>
@@ -120,13 +161,15 @@ function HomePage() {
   );
 }
 
-function Sidebar({ role }) {
+function Sidebar({ role, monitorMode = false }) {
   return (
     <aside className="sidebar">
       <Brand />
-      <p className="sidebar-label">WORKSPACE</p>
+      <p className="sidebar-label">{monitorMode ? "ADMIN MONITORING" : "WORKSPACE"}</p>
       <nav className="side-nav" aria-label="DashBite roles">
-        {ROLES.map((item) => <a className={`side-link${item === role ? " active" : ""}`} href={`#/${item}`} aria-current={item === role ? "page" : undefined} key={item}>
+        {ROLES.map((item) => <a className={`side-link${item === role ? " active" : ""}`} href={`#/${item}`} aria-current={item === role ? "page" : undefined} onClick={() => {
+          if (role === "ADMIN" || monitorMode) startAdminMonitoring();
+        }} key={item}>
           <span className="side-link-icon" aria-hidden="true">{roleConfig[item].icon}</span>{roleConfig[item].label}
         </a>)}
       </nav>
@@ -166,23 +209,32 @@ function ApiSettings({ onSaved }) {
   );
 }
 
-function Header({ role, apiBase, onApiBaseChange }) {
+function Header({ role, apiBase, onApiBaseChange, session, monitorMode = false }) {
   const config = roleConfig[role];
+  function signOut() {
+    clearPreviewSession();
+    window.location.hash = role === "ADMIN" || monitorMode ? "#/" : "#/LOGIN";
+  }
+
   return (
     <header className="app-header">
       <div className="breadcrumb">DashBite <span aria-hidden="true">/</span> <strong>{config.label}</strong></div>
       <div className="header-right">
         <span className="api-indicator"><span className="api-indicator-dot" aria-hidden="true" />API: {apiBase}</span>
         <ApiSettings onSaved={onApiBaseChange} />
-        <span className="user-chip"><span className="user-avatar" aria-hidden="true">{role[0]}</span>{config.label} preview</span>
+        <span className="user-chip"><span className="user-avatar" aria-hidden="true">{role[0]}</span>{session?.email || `${config.label} preview`}</span>
+        {(session || role === "ADMIN" || monitorMode) && <button className="text-button sign-out-button" type="button" onClick={signOut}>Log out</button>}
       </div>
     </header>
   );
 }
 
-function MetricGrid({ role }) {
+function MetricGrid({ role, pendingAccountCount }) {
+  const metrics = role === "ADMIN"
+    ? roleConfig[role].metrics.map((metric, index) => index === 0 ? [metric[0], String(pendingAccountCount), metric[2], metric[3]] : metric)
+    : roleConfig[role].metrics;
   return <section className="metric-grid" aria-label="Dashboard summary">
-    {roleConfig[role].metrics.map(([label, value, note, icon]) => <article className="metric-card" key={label}>
+    {metrics.map(([label, value, note, icon]) => <article className="metric-card" key={label}>
       <div className="metric-top"><span>{label}</span><span className="metric-icon" aria-hidden="true">{icon}</span></div>
       <div className="metric-value">{value}</div><div className="metric-note">{note}</div>
     </article>)}
@@ -193,29 +245,26 @@ function Status({ value }) {
   return <span className={`status status-${value.toLowerCase()}`}>{value}</span>;
 }
 
-function OrderTable({ orders, actionColumn = false }) {
+function OrderTable({ orders }) {
   return <div className="table-wrap"><table>
-    <thead><tr><th>ORDER</th><th>RESTAURANT</th><th>TOTAL</th><th>ORDER STATUS</th><th>PAYMENT</th>{actionColumn && <th>ACTION</th>}</tr></thead>
+    <thead><tr><th>ORDER</th><th>RESTAURANT</th><th>TOTAL</th><th>ORDER STATUS</th><th>PAYMENT</th></tr></thead>
     <tbody>{orders.map((order) => <tr key={order.id}>
       <td className="primary-cell">{order.id}</td><td>{order.restaurant}</td><td>{formatAmount(order.total)}</td>
       <td><Status value={order.status} /></td><td><Status value={order.payment} /></td>
-      {actionColumn && <td><span className="disabled-action" title="No accept/reject endpoint is defined in v1.0">Unavailable in v1.0</span></td>}
     </tr>)}</tbody>
   </table></div>;
 }
 
-function OrderPanel({ role }) {
-  const orders = role === "RESTAURANT" ? sampleOrders.filter(({ status }) => ["PENDING", "ACCEPTED"].includes(status)) : sampleOrders;
+function OrderPanel() {
   return <section className="panel">
-    <div className="panel-heading"><h2>{role === "CUSTOMER" ? "Recent orders" : "Order queue"}</h2><small>Sample preview data</small></div>
-    {orders.length ? <OrderTable orders={orders} actionColumn={role === "RESTAURANT"} /> : <div className="empty-state">No sample orders in this queue.</div>}
-    {role === "RESTAURANT" && <p className="permission-note">Accept/reject controls are intentionally unavailable: the v1.0 contract does not define a restaurant order endpoint.</p>}
+    <div className="panel-heading"><h2>Recent orders</h2><small>Sample preview data</small></div>
+    {sampleOrders.length ? <OrderTable orders={sampleOrders} /> : <div className="empty-state">No sample orders in this queue.</div>}
   </section>;
 }
 
 function ActivityPanel({ role }) {
   const items = role === "ADMIN"
-    ? [["♙", "4 accounts awaiting review", "Approval endpoint not defined in v1.0"], ["$", "2 payments flagged", "FLAGGED_DISCREPANCY"], ["▤", "12 orders in progress", "Illustrative operations data"]]
+    ? [["♙", "Account approval queue", "Review restaurant and rider applications"], ["$", "2 payments flagged", "FLAGGED_DISCREPANCY · sample data"], ["▤", "12 orders in progress", "Illustrative operations data"]]
     : role === "RIDER"
       ? [["➤", "New nearby offer", "SEARCHING_RIDER · 1 km radius"], ["◷", "Recent delivery", "Order ORD-2047 · PICKED_UP"], ["✓", "Today's deliveries", "7 completed · sample data"]]
       : [["▤", "Order update", "ORD-2048 · SEARCHING_RIDER"], ["✓", "Delivered", "ORD-2046 · SETTLED_TO_RESTAURANT"], ["⌖", "Delivery address", "Sample preview information"]];
@@ -239,11 +288,7 @@ function OfferTable() {
   </section>;
 }
 
-function AdminQueues() {
-  const accounts = [
-    { name: "Sample Restaurant", role: "RESTAURANT", status: "PENDING_APPROVAL" },
-    { name: "Sample Rider", role: "RIDER", status: "PENDING_APPROVAL" },
-  ];
+function AdminQueues({ onPendingCountChange }) {
   const payments = [
     { id: "PAY-031", status: "FLAGGED_DISCREPANCY" },
     { id: "PAY-029", status: "REMITTED_TO_ADMIN" },
@@ -259,17 +304,11 @@ function AdminQueues() {
           <tr><td className="primary-cell">System Only</td><td>Blast Offer</td><td><span className="disabled-action">System controlled</span></td></tr>
           <tr><td className="primary-cell">RIDER</td><td>Claim Offer</td><td><span className="status status-approved">API defined</span></td></tr>
           <tr><td className="primary-cell">ADMIN</td><td>Change Delivery Fee</td><td>{unavailable}</td></tr>
-          <tr><td className="primary-cell">ADMIN</td><td>Approve Accounts</td><td>{unavailable}</td></tr>
+          <tr><td className="primary-cell">ADMIN</td><td>Approve Restaurant/Rider Accounts</td><td><span className="status status-approved">Local preview</span></td></tr>
         </tbody>
       </table></div>
     </section>
-    <section className="panel">
-      <div className="panel-heading"><h2>Account review queue</h2><small>Sample preview data</small></div>
-      <div className="table-wrap"><table><thead><tr><th>ACCOUNT</th><th>ROLE</th><th>ACCOUNT STATUS</th><th>ACTION</th></tr></thead>
-        <tbody>{accounts.map((account) => <tr key={account.name}><td className="primary-cell">{account.name}</td><td>{account.role}</td><td><Status value={account.status} /></td><td><span className="disabled-action" title="No account approval endpoint is defined in v1.0">Unavailable in v1.0</span></td></tr>)}</tbody>
-      </table></div>
-      <p className="permission-note">The ADMIN role may approve accounts, but the v1.0 contract does not define an approval endpoint.</p>
-    </section>
+    <AdminApprovalQueue onPendingCountChange={onPendingCountChange} />
     <section className="panel">
       <div className="panel-heading"><h2>Payment reconciliation</h2><small>Sample preview data</small></div>
       <div className="table-wrap"><table><thead><tr><th>REFERENCE</th><th>PAYMENT STATUS</th></tr></thead>
@@ -280,11 +319,10 @@ function AdminQueues() {
   </>;
 }
 
-function RoleContent({ role }) {
-  if (role === "CUSTOMER") return <div className="content-grid"><div><OrderPanel role={role} /></div><div><ActivityPanel role={role} /><CustomerOrderForm /></div></div>;
-  if (role === "RESTAURANT") return <div className="content-grid"><div><OrderPanel role={role} /></div><div><ActivityPanel role={role} /></div></div>;
-  if (role === "RIDER") return <div className="content-grid"><div><OfferTable /><ActivityPanel role={role} /></div><div><RiderOfferForm /></div></div>;
-  return <div className="content-grid"><div><AdminQueues /></div><div><ActivityPanel role={role} /></div></div>;
+function RoleContent({ role, canOperate, disabledMessage, onPendingCountChange }) {
+  if (role === "CUSTOMER") return <div className="content-grid"><div><OrderPanel /></div><div><ActivityPanel role={role} /><CustomerOrderForm disabled={!canOperate} disabledMessage={disabledMessage} /></div></div>;
+  if (role === "RIDER") return <div className="content-grid"><div><OfferTable /><ActivityPanel role={role} /></div><div><RiderOfferForm disabled={!canOperate} disabledMessage={disabledMessage} /></div></div>;
+  return <div className="content-grid"><div><AdminQueues onPendingCountChange={onPendingCountChange} /></div><div><ActivityPanel role={role} /></div></div>;
 }
 
 function ContractReference() {
@@ -304,27 +342,48 @@ function ContractReference() {
 function Dashboard({ role }) {
   const config = roleConfig[role];
   const [apiBase, setApiBase] = useState(getApiBaseUrl);
+  const [pendingAccountCount, setPendingAccountCount] = useState(0);
+  const session = getPreviewSession(role);
+  const monitorMode = role !== "ADMIN" && isAdminMonitoring();
+  const canOperate = !monitorMode && (!session || session.status === "APPROVED");
   return <div className="app-shell">
-    <Sidebar role={role} />
+    <Sidebar role={role} monitorMode={monitorMode} />
     <div className="app-main">
-      <Header role={role} apiBase={apiBase} onApiBaseChange={setApiBase} />
+      <Header role={role} apiBase={apiBase} onApiBaseChange={setApiBase} session={session} monitorMode={monitorMode} />
       <div className="page-heading"><div><h1>{config.title}</h1><p>{config.subtitle}</p></div><span className="preview-label">PREVIEW DATA</span></div>
+      {monitorMode && <div className="demo-banner admin-monitor-banner"><strong>Admin monitoring view:</strong> you can inspect this role's dashboard without signing in as that user. Controls are read-only, and the displayed records are sample preview data.</div>}
+      {session?.status === "PENDING_APPROVAL" && <div className="demo-banner account-pending-banner" role="status"><strong>Pending admin approval:</strong> you can view this dashboard, but operational actions are blocked until your account is approved.</div>}
       <div className="demo-banner"><strong>Frontend preview:</strong> dashboard figures are sample data, not live records. API forms send contract fields to <code>{apiBase}</code>; no backend or authentication is included.</div>
-      <MetricGrid role={role} />
-      <RoleContent role={role} />
+      {role === "ADMIN" && <div className="demo-banner"><strong>Admin preview only:</strong> this portal has no admin authentication. Approvals affect preview accounts saved in this browser only; never use it to approve real applicants.</div>}
+      <MetricGrid role={role} pendingAccountCount={pendingAccountCount} />
+      <RoleContent
+        role={role}
+        canOperate={canOperate}
+        disabledMessage={monitorMode
+          ? "Read-only admin monitoring: operational actions are disabled in this view."
+          : "Your account is pending admin approval. Operational actions are blocked until your account is approved."}
+        onPendingCountChange={setPendingAccountCount}
+      />
       <ContractReference />
     </div>
   </div>;
 }
 
 export default function App() {
-  const [role, setRole] = useState(readRoute);
+  const [role, setRole] = useState(readAuthorizedRoute);
 
   useEffect(() => {
-    const updateRoute = () => setRole(readRoute());
+    const updateRoute = () => setRole(readAuthorizedRoute());
     window.addEventListener("hashchange", updateRoute);
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
+  if (role === "LOGIN") return <LoginFlow />;
+  if (role === "SIGNUP") return <SignupFlow />;
+  if (role === "ADMIN_LOGIN") return <AdminLogin />;
+  if (role === "ADMIN") return <AdminPortal />;
+  if (role === "CUSTOMER") return <CustomerPortal />;
+  if (role === "RESTAURANT") return <RestaurantPortal />;
+  if (role === "RIDER") return <RiderPortal />;
   return role && ROLES.includes(role) ? <Dashboard role={role} /> : <HomePage />;
 }
