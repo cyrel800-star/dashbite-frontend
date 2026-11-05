@@ -1,123 +1,81 @@
-import { useEffect, useState } from "react";
-import logoUrl from "../../../assets/logo.svg";
-import { clearAdminMonitoring, clearPreviewSession, getPreviewSession, startAdminMonitoring } from "../../lib/previewSession.js";
-import { loadAdminPortalData, saveAdminPortalData } from "../../lib/adminPortal.js";
-import { AdminDashboard, AdminAccounts, AdminOrderDetails, AdminOrders, AdminReports, AdminReviews, AdminSettings } from "./AdminScreens.jsx";
+import { useState } from "react";
+import PortalFrame from "../PortalFrame.jsx";
+import { RESTAURANTS } from "../../data/sample.js";
+import { heroSteak } from "../../data/images.js";
+import { Chart, Empty, Food, StatCard, Tag, toast } from "../../ui/components.jsx";
+import { LOCAL_KEYS, usePersistentState } from "../../lib/localData.js";
 
-const PAGES = [
-  { id: "DASHBOARD", label: "Overview", icon: "⌂" },
-  { id: "ACCOUNTS", label: "Accounts", icon: "♙" },
-  { id: "ORDERS", label: "Orders", icon: "▤" },
-  { id: "REPORTS", label: "Reports", icon: "↗" },
-  { id: "REVIEWS", label: "Reviews", icon: "★" },
-  { id: "SETTINGS", label: "Settings", icon: "⚙" },
-];
+const RANGES = { "7 Days": [30, 55, 78, 95, 120, 96, 122], "30 Days": [60, 80, 70, 110, 130, 125, 160], "90 Days": [90, 100, 140, 130, 170, 190, 210] };
 
-const MONITOR_ROLES = [
-  { id: "CUSTOMER", label: "Customer", icon: "⌂" },
-  { id: "RESTAURANT", label: "Restaurant", icon: "▤" },
-  { id: "RIDER", label: "Rider", icon: "➤" },
-];
+// Local account approvals, order oversight, reports, and review moderation.
+export default function AdminPortal(props) {
+  const [range, setRange] = useState("7 Days");
+  const [accounts, setAccounts] = usePersistentState(LOCAL_KEYS.accounts, []);
+  const [orders, setOrders] = usePersistentState(LOCAL_KEYS.orders, []);
+  const [reviews, setReviews] = usePersistentState(LOCAL_KEYS.reviews, []);
 
-function readPage() {
-  const parts = window.location.hash.replace(/^#\/ADMIN\/?/i, "").split("/").filter(Boolean);
-  const page = (parts[0] || "DASHBOARD").toUpperCase();
-  return { page, id: parts[1] || "" };
-}
+  // Admin actions persist changes to the shared browser-local demo records.
+  const decide = (account, status) => {
+    setAccounts((saved) => saved.map((item) => item.email === account.email ? { ...item, status } : item));
+    toast(`${account.name} ${status === "APPROVED" ? "approved" : "rejected"}.`);
+  };
+  const changeOrder = (order, status) => {
+    setOrders((saved) => saved.map((item) => item.id === order.id ? { ...item, status } : item));
+    toast(`${order.id} updated.`);
+  };
+  const moderateReview = (review, status) => {
+    setReviews((saved) => saved.map((item) => item.id === review.id ? { ...item, status } : item));
+    toast(`Review ${status === "HIDDEN" ? "hidden" : "restored"}.`);
+  };
+  const searchable = (query, value) => value.toLowerCase().includes(query.toLowerCase());
+  const table = (rows, columns) => <div className="tw"><table><thead><tr>{columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{rows}</tbody></table></div>;
 
-function Brand() {
-  return <a className="brand admin-brand" href="#/" aria-label="DashBite home">
-    <img src={logoUrl} alt="" width="38" height="38" />
-    <span>dash<span className="brand-accent">bite</span></span>
-  </a>;
-}
-
-export default function AdminPortal() {
-  const session = getPreviewSession("ADMIN");
-  const [route, setRoute] = useState(readPage);
-  const [portalState, setPortalState] = useState(() => {
-    try {
-      return { data: loadAdminPortalData(), error: "" };
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error.message : "Could not load Admin preview settings." };
-    }
-  });
-
-  useEffect(() => {
-    const updateRoute = () => setRoute(readPage());
-    window.addEventListener("hashchange", updateRoute);
-    return () => window.removeEventListener("hashchange", updateRoute);
-  }, []);
-
-  function navigate(path) {
-    window.location.hash = `#/ADMIN/${path}`;
-  }
-
-  function updateData(updater) {
-    if (!portalState.data) return;
-    try {
-      const next = updater(portalState.data);
-      saveAdminPortalData(next);
-      setPortalState({ data: next, error: "" });
-    } catch (error) {
-      setPortalState((current) => ({ ...current, error: error instanceof Error ? error.message : "Could not save Admin preview settings." }));
-    }
-  }
-
-  function monitorRole(role) {
-    startAdminMonitoring();
-    window.location.hash = `#/${role}`;
-  }
-
-  function logOut() {
-    clearPreviewSession();
-    clearAdminMonitoring();
-    window.location.hash = "#/";
-  }
-
-  const routePage = route.page === "ORDER" ? "ORDERS" : route.page;
-  const activePage = PAGES.find((item) => item.id === routePage) || PAGES[0];
-  const data = portalState.data;
-  let content = null;
-  if (data) {
-    if (route.page === "DASHBOARD") content = <AdminDashboard data={data} onNavigate={navigate} />;
-    else if (route.page === "ACCOUNTS") content = <AdminAccounts />;
-    else if (routePage === "ORDERS") content = route.id ? <AdminOrderDetails orderId={route.id} onNavigate={navigate} /> : <AdminOrders onNavigate={navigate} />;
-    else if (route.page === "REPORTS") content = <AdminReports />;
-    else if (route.page === "REVIEWS") content = <AdminReviews data={data} onChange={updateData} />;
-    else if (route.page === "SETTINGS") content = <AdminSettings data={data} onChange={updateData} />;
-  }
-
-  return <div className="restaurant-shell admin-shell">
-    <aside className="restaurant-sidebar admin-sidebar">
-      <Brand />
-      <div className="restaurant-sidebar-identity">
-        <div className="restaurant-profile-avatar">A</div>
-        <div><strong>DashBite Admin</strong><span>Operations workspace</span></div>
-      </div>
-      <p className="restaurant-nav-label">ADMIN PORTAL</p>
-      <nav className="restaurant-nav admin-nav" aria-label="Admin portal">
-        {PAGES.map((item) => <a className={`restaurant-nav-link${activePage.id === item.id ? " is-active" : ""}`} href={`#/ADMIN/${item.id}`} aria-current={activePage.id === item.id ? "page" : undefined} key={item.id}>
-          <span aria-hidden="true">{item.icon}</span>{item.label}
-        </a>)}
-      </nav>
-      <p className="admin-monitor-label">WORKSPACE MONITORING</p>
-      <nav className="restaurant-nav admin-monitor-nav" aria-label="Monitor role previews">
-        {MONITOR_ROLES.map((role) => <a className="restaurant-nav-link" href={`#/${role.id}`} onClick={() => startAdminMonitoring()} key={role.id}><span aria-hidden="true">{role.icon}</span>{role.label}<b aria-hidden="true">↗</b></a>)}
-      </nav>
-      <div className="restaurant-sidebar-bottom"><a className="restaurant-workspace-link" href="#/"><span aria-hidden="true">⌂</span>DashBite home<b aria-hidden="true">↗</b></a><span>DashBite · Core v1.0</span></div>
-    </aside>
-    <main className="restaurant-main admin-main">
-      <header className="restaurant-topbar">
-        <div className="restaurant-topbar-title"><span>DashBite Admin</span><b aria-hidden="true">/</b><strong>{route.page === "ORDER" ? "Order details" : activePage.label}</strong></div>
-        <div className="restaurant-topbar-actions"><span className="admin-preview-pill"><i />Preview mode</span><span className="restaurant-account-chip"><i>A</i><span>{session?.email || "Admin preview"}</span></span><button className="restaurant-logout" type="button" onClick={logOut}>Log out</button></div>
-      </header>
-      <div className="restaurant-main-inner admin-main-inner">
-        <div className="admin-preview-banner"><span aria-hidden="true">i</span><p><strong>Frontend-only Admin preview.</strong> The credentials are demo-only. Accounts, approvals, reviews, settings, and reports are browser-local sample data; no live platform is managed.</p></div>
-        {portalState.error && <div className="admin-notice admin-notice-error" role="alert">{portalState.error}</div>}
-        {content}
-        <footer className="restaurant-footer"><span>© 2026 DashBite</span><span>Admin portal · Preview data</span></footer>
-      </div>
-    </main>
-  </div>;
+  // Map admin navigation keys to dashboard and management screens.
+  const screens = {
+    dash: ({ setView }) => {
+      const pending = accounts.filter((account) => account.status === "PENDING_APPROVAL");
+      const sales = orders.filter((order) => order.status !== "CANCELLED").reduce((sum, order) => sum + order.total, 0);
+      return <div className="col">
+        <div className="ban"><div><span className="pill">Welcome Back, Admin!</span><h2>DashBite <span className="or">Admin Panel</span></h2><p>Manage local demo accounts, menu orders and system features.</p><button className="btn" onClick={() => setView("reports")}>View Reports →</button></div><Food src={heroSteak} /></div>
+        <div className="stats">
+          <StatCard icon="👥" label="Registered Accounts" value={String(accounts.length)} />
+          <StatCard icon="🏪" label="Restaurants" value={String(RESTAURANTS.length)} />
+          <StatCard icon="🛍️" label="Local Orders" value={String(orders.length)} />
+          <StatCard icon="₱" label="Order Value" value={`₱${sales.toLocaleString()}`} />
+        </div>
+        <div className="stats admin-grid">
+          <div className="card"><div className="row"><h3>Sales Analytics</h3><span className="tabs">{Object.keys(RANGES).map((item) => <button key={item} className={range === item ? "on" : ""} onClick={() => setRange(item)}>{item}</button>)}</span></div><Chart points={RANGES[range]} /><div className="steps">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}</div></div>
+          <div className="card"><h3>Recent Local Orders</h3>{orders.length ? [...orders].reverse().slice(0, 5).map((order) => <div className="li" key={order.id}><div className="f"><b>{order.id}</b><small>{order.restaurant} · ₱{order.total}</small></div><Tag tone="w">{order.status.replaceAll("_", " ")}</Tag></div>) : <Empty icon="🛍️">New orders will appear here.</Empty>}</div>
+          <div className="card"><h3>Pending Approvals</h3>{pending.length ? pending.slice(0, 5).map((account) => <div className="li" key={account.email}><div className="f"><b>{account.name}</b><small>{account.role} · {account.email}</small></div><button className="btn sm" onClick={() => decide(account, "APPROVED")}>Approve</button></div>) : <Empty icon="🎉">No approvals waiting.</Empty>}</div>
+        </div>
+      </div>;
+    },
+    users: ({ q }) => {
+      const matches = accounts.filter((account) => searchable(q, `${account.name} ${account.email} ${account.role}`));
+      return <section className="card"><h3>Manage Users</h3>{matches.length ? table(matches.map((account) => <tr key={account.email}><td>{account.name}</td><td>{account.email}</td><td>{account.role}</td><td><Tag tone={account.status === "APPROVED" ? "a" : "w"}>{account.status.replaceAll("_", " ")}</Tag></td><td>{account.status === "DISABLED" ? <button className="btn gh sm" onClick={() => decide(account, "APPROVED")}>Enable</button> : <button className="btn gh sm" onClick={() => decide(account, "DISABLED")}>Disable</button>}</td></tr>), ["Name", "Email", "Role", "Status", "Action"]) : <Empty icon="👥">No registered users match your search yet.</Empty>}</section>;
+    },
+    restaurants: ({ q }) => {
+      const matches = RESTAURANTS.filter((restaurant) => searchable(q, `${restaurant.name} ${restaurant.cuisine}`));
+      return <section className="card"><h3>Restaurants</h3>{table(matches.map((restaurant) => <tr key={restaurant.name}><td>{restaurant.name}</td><td>{restaurant.cuisine}</td><td>⭐ {restaurant.rating}</td><td>₱{restaurant.fee}</td><td><Tag>Open</Tag></td></tr>), ["Name", "Cuisine", "Rating", "Delivery fee", "Status"])}</section>;
+    },
+    riders: ({ q }) => {
+      const riders = accounts.filter((account) => account.role === "RIDER" && searchable(q, `${account.name} ${account.email}`));
+      return <section className="card"><h3>Riders</h3>{riders.length ? table(riders.map((rider) => <tr key={rider.email}><td>{rider.name}</td><td>{rider.email}</td><td><Tag tone={rider.status === "APPROVED" ? "a" : "w"}>{rider.status.replaceAll("_", " ")}</Tag></td></tr>), ["Name", "Email", "Status"]) : <Empty icon="🛵">Rider sign-ups will appear here.</Empty>}</section>;
+    },
+    orders: ({ q }) => {
+      const matches = orders.filter((order) => searchable(q, `${order.id} ${order.restaurant} ${order.status}`));
+      return <section className="card"><h3>All Orders</h3>{matches.length ? table(matches.map((order) => <tr key={order.id}><td>{order.id}</td><td>{order.restaurant}</td><td>{order.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}</td><td>₱{order.total}</td><td><Tag tone="w">{order.status.replaceAll("_", " ")}</Tag></td><td>{!["DELIVERED", "CANCELLED"].includes(order.status) && <button className="btn gh sm" onClick={() => changeOrder(order, "CANCELLED")}>Cancel</button>}</td></tr>), ["Order", "Restaurant", "Items", "Total", "Status", "Action"]) : <Empty icon="🛍️">No local orders match your search.</Empty>}</section>;
+    },
+    reviews: ({ q }) => {
+      const matches = reviews.filter((review) => searchable(q, `${review.restaurant} ${review.author} ${review.text}`));
+      return <section className="card"><h3>Reviews</h3>{matches.length ? matches.map((review) => <div className="li review-row" key={review.id}><div className="f"><b>{review.restaurant} · {"★".repeat(review.rating)}</b><small>{review.author} · {review.orderId}</small><small>{review.text}</small></div><Tag tone={review.status === "HIDDEN" ? "w" : "a"}>{review.status}</Tag><button className="btn gh sm" onClick={() => moderateReview(review, review.status === "HIDDEN" ? "PUBLISHED" : "HIDDEN")}>{review.status === "HIDDEN" ? "Restore" : "Hide"}</button></div>) : <Empty icon="⭐">Customer reviews will appear here after completed orders are reviewed.</Empty>}</section>;
+    },
+    reports: () => <section className="card"><h3>Reports</h3><p>Summary of activity saved in this browser.</p><div className="stats"><StatCard icon="👥" label="Accounts" value={String(accounts.length)} /><StatCard icon="🛍️" label="Orders" value={String(orders.length)} /><StatCard icon="₱" label="Sales value" value={`₱${orders.filter((order) => order.status !== "CANCELLED").reduce((sum, order) => sum + order.total, 0).toLocaleString()}`} /><StatCard icon="⏳" label="Awaiting approval" value={String(accounts.filter((account) => account.status === "PENDING_APPROVAL").length)} /></div><Chart points={RANGES[range]} /><div className="tabs">{Object.keys(RANGES).map((item) => <button key={item} className={range === item ? "on" : ""} onClick={() => setRange(item)}>{item}</button>)}</div></section>,
+    moderation: () => <section className="card"><h3>Moderation</h3><p>Hide reviews that should not appear to restaurant owners.</p>{reviews.length ? reviews.map((review) => <div className="li" key={review.id}><div className="f"><b>{review.restaurant} · {review.orderId}</b><small>{review.text}</small></div><Tag tone={review.status === "HIDDEN" ? "w" : "a"}>{review.status}</Tag><button className="btn gh sm" onClick={() => moderateReview(review, review.status === "HIDDEN" ? "PUBLISHED" : "HIDDEN")}>{review.status === "HIDDEN" ? "Restore" : "Hide"}</button></div>) : <Empty icon="🛡️">No reviews need moderation.</Empty>}</section>,
+    logs: () => {
+      const activity = [...orders.map((order) => ({ key: order.id, label: `Order ${order.id} · ${order.status.replaceAll("_", " ")}`, date: order.createdAt })), ...accounts.map((account) => ({ key: account.email, label: `${account.role} account ${account.email} · ${account.status.replaceAll("_", " ")}`, date: account.createdAt }))].sort((a, b) => new Date(b.date) - new Date(a.date));
+      return <section className="card"><h3>System Logs</h3>{activity.length ? activity.map((item) => <div className="li" key={item.key}><span className="f">{item.label}</span><small>{new Date(item.date).toLocaleString()}</small></div>) : <Empty icon="📄">Activity will appear here as you use the demo.</Empty>}</section>;
+    },
+  };
+  return <PortalFrame role="ADMIN" {...props} placeholder="Search users, restaurants, or orders…" screens={screens} />;
 }

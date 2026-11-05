@@ -1,5 +1,6 @@
 import { ACCOUNT_STATUSES, ROLES } from "../data/constants.js";
 
+// Session-only keys keep the current local demo sign-in separate from saved data.
 const SESSION_KEYS = {
   role: "dashbite.previewRole",
   status: "dashbite.previewAccountStatus",
@@ -7,6 +8,7 @@ const SESSION_KEYS = {
   adminMonitoring: "dashbite.adminMonitoring",
 };
 
+// Validate and restore demo sessions using session storage.
 export function startPreviewSession({ role, status, email }) {
   if (!ROLES.includes(role) || !ACCOUNT_STATUSES.includes(status) || !email) {
     throw new Error("The preview account selection is invalid.");
@@ -24,6 +26,7 @@ export function getPreviewSession(role) {
   return { role: savedRole, status, email };
 }
 
+// Optional admin monitoring flag for local preview flows.
 export function startAdminMonitoring() {
   window.sessionStorage.setItem(SESSION_KEYS.adminMonitoring, "true");
 }
@@ -36,6 +39,7 @@ export function clearAdminMonitoring() {
   window.sessionStorage.removeItem(SESSION_KEYS.adminMonitoring);
 }
 
+// Remove all session-only state when the user signs out.
 export function clearPreviewSession() {
   Object.values(SESSION_KEYS).forEach((key) => window.sessionStorage.removeItem(key));
 }

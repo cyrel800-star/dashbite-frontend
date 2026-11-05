@@ -1,139 +1,121 @@
-import { useEffect, useState } from "react";
-import logoUrl from "../../../assets/logo.svg";
-import { clearPreviewSession, getPreviewSession, isAdminMonitoring } from "../../lib/previewSession.js";
-import { findPreviewAccount } from "../../lib/previewAccounts.js";
-import { loadCustomerPortal, saveCustomerPortal } from "../../lib/customerPortal.js";
-import CustomerBrowse, { CustomerRestaurants } from "./CustomerBrowse.jsx";
-import CustomerRestaurant from "./CustomerRestaurant.jsx";
-import { CustomerChat, CustomerChatInbox, CustomerTrackOrder } from "./CustomerActivity.jsx";
-import CustomerOrders, { CustomerCart } from "./CustomerOrders.jsx";
-import CustomerSaved, { CustomerProfile } from "./CustomerSaved.jsx";
-import { CustomerEmptyState, CustomerNotice } from "./CustomerUI.jsx";
+import { useState } from "react";
+import PortalFrame from "../PortalFrame.jsx";
+import { CATEGORIES, RESTAURANTS } from "../../data/sample.js";
+import { heroBurger } from "../../data/images.js";
+import { Empty, Food, RestaurantCard, Tag, toast } from "../../ui/components.jsx";
+import { INITIAL_MENU, LOCAL_KEYS, usePersistentState } from "../../lib/localData.js";
 
-const PAGES = [
-  { id: "DASHBOARD", label: "Discover", icon: "⌂" },
-  { id: "RESTAURANTS", label: "Restaurants", icon: "♧" },
-  { id: "FAVORITES", label: "Favorites", icon: "♡" },
-  { id: "CART", label: "Your cart", icon: "🛍" },
-  { id: "ORDERS", label: "My orders", icon: "▤" },
-  { id: "CHATS", label: "Messages", icon: "✉" },
-  { id: "PROFILE", label: "Profile", icon: "◉" },
-];
+// Customer browsing, order placement, favorites, reviews, and chat.
+export default function CustomerPortal(props) {
+  const [cat, setCat] = useState("All");
+  const [favs, setFavs] = usePersistentState(LOCAL_KEYS.favorites, ["Burger House"]);
+  const [menu] = usePersistentState(LOCAL_KEYS.menu, INITIAL_MENU);
+  const [orders, setOrders] = usePersistentState(LOCAL_KEYS.orders, []);
+  const [reviews, setReviews] = usePersistentState(LOCAL_KEYS.reviews, []);
+  const [messages, setMessages] = usePersistentState(LOCAL_KEYS.messages, []);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [reviewOrder, setReviewOrder] = useState("");
+  const [reviewText, setReviewText] = useState("");
+  const [rating, setRating] = useState("5");
+  const [chatText, setChatText] = useState("");
+  const [chatOrder, setChatOrder] = useState("");
 
-function readPage() {
-  const parts = window.location.hash.replace(/^#\/CUSTOMER\/?/i, "").split("/").filter(Boolean);
-  const page = (parts[0] || "DASHBOARD").toUpperCase();
-  const allowed = PAGES.some((item) => item.id === page)
-    || ["RESTAURANT", "TRACK", "CHAT"].includes(page);
-  return allowed ? { page, id: parts[1] || "" } : { page: "DASHBOARD", id: "" };
-}
+  // Customer actions update shared browser-local records for other demo roles.
+  const toggleFav = (name) => setFavs((saved) => saved.includes(name) ? saved.filter((item) => item !== name) : [...saved, name]);
+  const cards = (list, onSelect) => <div className="grid4">{list.map((r) => <RestaurantCard key={r.name} r={r} fav={favs.includes(r.name)} onFav={toggleFav} onViewMenu={() => onSelect(r.name)} />)}</div>;
+  const placeOrder = (restaurant, item) => {
+    const newOrder = {
+      id: `DB${Date.now().toString().slice(-6)}`,
+      restaurant,
+      items: [{ id: item.id, name: item.name, price: item.price, quantity: 1 }],
+      total: item.price,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
+    setOrders((saved) => [...saved, newOrder]);
+    setSelectedRestaurant(null);
+    toast(`Order ${newOrder.id} placed. The restaurant can now accept it.`);
+    return newOrder;
+  };
+  const findRestaurants = (q = "") => RESTAURANTS.filter((restaurant) =>
+    (cat === "All" || restaurant.cuisine === cat) &&
+    `${restaurant.name} ${restaurant.cuisine}`.toLowerCase().includes(q.toLowerCase()));
+  const openMenu = (name) => setSelectedRestaurant(name);
+  const submitReview = (event) => {
+    event.preventDefault();
+    const order = orders.find((item) => item.id === reviewOrder && item.status === "DELIVERED");
+    if (!order || !reviewText.trim()) return;
+    setReviews((saved) => [...saved, { id: `review-${Date.now()}`, orderId: order.id, restaurant: order.restaurant, author: props.user.name, rating: Number(rating), text: reviewText.trim(), status: "PUBLISHED", createdAt: new Date().toISOString() }]);
+    setReviewText("");
+    setReviewOrder("");
+    toast("Your review was saved on this device.");
+  };
+  const sendMessage = (event) => {
+    event.preventDefault();
+    const text = chatText.trim();
+    if (!chatOrder || !text) return;
+    setMessages((saved) => [...saved, { id: `message-${Date.now()}`, orderId: chatOrder, sender: "customer", name: props.user.name, text, createdAt: new Date().toISOString() }]);
+    setChatText("");
+    toast("Message sent to the restaurant.");
+  };
+  const completedOrders = orders.filter((order) => order.status === "DELIVERED" && !reviews.some((review) => review.orderId === order.id));
 
-function Brand() {
-  return <a className="brand customer-brand" href="#/" aria-label="DashBite home">
-    <img src={logoUrl} alt="" width="38" height="38" />
-    <span>dash<span className="brand-accent">bite</span></span>
-  </a>;
-}
+  // Restaurant selection and order forms are reused by the dashboard and browse screen.
+  const menuView = (name) => {
+    const availableItems = menu.filter((item) => item.available);
+    return <section className="card"><div className="row"><div><h3>{name} Menu</h3><small>Select an item to place a local demo order.</small></div><button className="btn gh sm" onClick={() => setSelectedRestaurant(null)}>Back to Restaurants</button></div>
+      {availableItems.length ? <div className="mg menu-grid">{availableItems.map((item) => <article className="mi menu-item" key={item.id}><Food src={item.image} alt={item.name} /><b>{item.name}</b><span>₱{item.price}</span><button className="btn sm" onClick={() => placeOrder(name, item)}>Order Now</button></article>)}</div> : <Empty icon="🍽️">There are no available menu items right now.</Empty>}
+    </section>;
+  };
 
-export default function CustomerPortal() {
-  const session = getPreviewSession("CUSTOMER");
-  const email = session?.email || "";
-  const monitorMode = isAdminMonitoring();
-  const [route, setRoute] = useState(readPage);
-  const [portalState, setPortalState] = useState(() => {
-    try {
-      const account = email ? findPreviewAccount(email) : null;
-      return { data: loadCustomerPortal(email, account), error: "" };
-    } catch (error) {
-      return { data: null, error: error instanceof Error ? error.message : "Could not load customer preview data." };
-    }
-  });
-
-  useEffect(() => {
-    const updateRoute = () => setRoute(readPage());
-    window.addEventListener("hashchange", updateRoute);
-    return () => window.removeEventListener("hashchange", updateRoute);
-  }, []);
-
-  function navigate(path) {
-    window.location.hash = `#/CUSTOMER/${path}`;
-  }
-
-  function updateData(updater) {
-    if (!portalState.data || monitorMode) return;
-    try {
-      const nextData = updater(portalState.data);
-      saveCustomerPortal(email, nextData);
-      setPortalState({ data: nextData, error: "" });
-    } catch (error) {
-      setPortalState((current) => ({ ...current, error: error instanceof Error ? error.message : "Could not save customer preview data." }));
-    }
-  }
-
-  function logOut() {
-    clearPreviewSession();
-    window.location.hash = monitorMode ? "#/" : "#/LOGIN";
-  }
-
-  const activePage = ["RESTAURANT", "TRACK", "CHAT"].includes(route.page)
-    ? route.page === "RESTAURANT" ? "RESTAURANTS" : route.page === "TRACK" ? "ORDERS" : "CHATS"
-    : route.page;
-  const page = PAGES.find((item) => item.id === activePage) || PAGES[0];
-  const data = portalState.data;
-  let content = null;
-  if (data) {
-    if (route.page === "DASHBOARD") content = <CustomerBrowse data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "RESTAURANTS") content = <CustomerRestaurants data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "RESTAURANT") content = <CustomerRestaurant restaurantId={route.id} data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "FAVORITES") content = <CustomerSaved data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "CART") content = <CustomerCart data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "ORDERS") content = <CustomerOrders data={data} onNavigate={navigate} />;
-    else if (route.page === "TRACK") content = <CustomerTrackOrder orderId={route.id} data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "CHATS") content = <CustomerChatInbox data={data} onNavigate={navigate} />;
-    else if (route.page === "CHAT") content = <CustomerChat orderId={route.id} data={data} onChange={updateData} onNavigate={navigate} />;
-    else if (route.page === "PROFILE") content = <CustomerProfile data={data} onChange={updateData} />;
-    else content = <CustomerEmptyState title="Page not found" description="Choose a section from the customer menu." />;
-  }
-
-  return <div className={`restaurant-shell customer-shell${monitorMode ? " is-read-only" : ""}`}>
-    <aside className="restaurant-sidebar customer-sidebar">
-      <Brand />
-      <div className="restaurant-sidebar-identity">
-        <div className="restaurant-profile-avatar">{(data?.profile.name || "C").trim().charAt(0).toUpperCase()}</div>
-        <div><strong>{data?.profile.name || "Customer preview"}</strong><span>Customer account</span></div>
-      </div>
-      <p className="restaurant-nav-label">{monitorMode ? "ADMIN MONITORING" : "CUSTOMER PORTAL"}</p>
-      <nav className="restaurant-nav customer-nav" aria-label="Customer portal">
-        {PAGES.map((item) => <a
-          className={`restaurant-nav-link${activePage === item.id ? " is-active" : ""}`}
-          href={`#/CUSTOMER/${item.id}`}
-          aria-current={activePage === item.id ? "page" : undefined}
-          key={item.id}
-        ><span aria-hidden="true">{item.icon}</span>{item.label}{item.id === "CART" && data?.cart.items.length > 0 && <i aria-label={`${data.cart.items.reduce((sum, entry) => sum + entry.quantity, 0)} items in cart`} />}</a>)}
-      </nav>
-      <div className="restaurant-sidebar-bottom">
-        {monitorMode
-          ? <a className="restaurant-workspace-link" href="#/ADMIN"><span aria-hidden="true">▦</span>Back to Admin<b aria-hidden="true">↗</b></a>
-          : <a className="restaurant-workspace-link" href="#/"><span aria-hidden="true">⌂</span>DashBite home<b aria-hidden="true">↗</b></a>}
-        <span>DashBite · Core v1.0</span>
-      </div>
-    </aside>
-    <main className="restaurant-main customer-main">
-      <header className="restaurant-topbar">
-        <div className="restaurant-topbar-title"><span>Customer</span><b aria-hidden="true">/</b><strong>{page.label}</strong></div>
-        <div className="restaurant-topbar-actions">
-          {monitorMode && <span className="restaurant-monitor-pill">Read-only monitoring</span>}
-          <span className="restaurant-account-chip"><i>{(data?.profile.name || "C").trim().charAt(0).toUpperCase()}</i><span>{email || "Customer preview"}</span></span>
-          <button className="restaurant-logout" type="button" onClick={logOut}>{monitorMode ? "Back to Admin" : "Log out"}</button>
+  // Map navigation keys to customer views.
+  const screens = {
+    dash: ({ q, setView }) => {
+      const list = findRestaurants(q);
+      return (
+        <div className="two">
+          <div className="col">
+            <div className="ban">
+              <div><span className="or">Fast · Fresh · Local</span><h2>Your Favorite Food <span className="or">Delivered Fast</span></h2>
+                <p>Order from the best local restaurants and get it delivered to your door.</p>
+                <button className="btn" onClick={() => setView("browse")}>Order Now →</button></div>
+              <Food src={heroBurger} alt="" />
+            </div>
+            <div><h3>Food Categories</h3>
+              <div className="cats">{CATEGORIES.map(([c, e]) => <button key={c} className={`cat ${cat === c ? "on" : ""}`} onClick={() => setCat(c)}><em>{e}</em>{c}</button>)}</div></div>
+            <div><h3>Popular Restaurants</h3>
+              {selectedRestaurant ? menuView(selectedRestaurant) : list.length ? cards(list, openMenu) : <Empty icon="🔎">No restaurants match your search. Try another food or category.</Empty>}</div>
+          </div>
+          <div className="col">
+            <div className="card"><h3>My Orders</h3>
+              {orders.length ? [...orders].reverse().slice(0, 3).map((order) => <div className="li" key={order.id}><Food src={RESTAURANTS.find((restaurant) => restaurant.name === order.restaurant)?.img || RESTAURANTS[0].img} style={{ width: 50, minHeight: 50, borderRadius: 12 }} /><div className="f"><b>Order #{order.id}</b><small>₱{order.total}</small><span className="or">{order.status.replaceAll("_", " ")}</span></div></div>) : <Empty icon="🛍️">Your orders will appear here after checkout.</Empty>}
+            </div>
+            <div className="card"><h3>Track Your Order</h3>
+              {orders.some((order) => ["READY", "ON_THE_WAY"].includes(order.status)) ? <div className="food" style={{ minHeight: 90, fontSize: 34, background: "linear-gradient(135deg,#dfeadc,#f3e8d4)" }}>🍴 ⋯ 🛵 ⋯ 🏠</div> : <p>Your delivery tracker will activate when an order is ready for pickup.</p>}
+            </div>
+            <div className="card"><h3>My Favorites</h3>
+              <div className="qa">{favs.map((name) => <button key={name} onClick={() => openMenu(name)}>❤️ {name}</button>)}</div>
+              {!favs.length && <small>No favorites yet. Tap a heart on any restaurant.</small>}</div>
+            <div className="promo"><b>Get 20% OFF on your next order!</b><span>Use code: DASH20</span></div>
+          </div>
         </div>
-      </header>
-      <div className="restaurant-main-inner customer-main-inner">
-        {monitorMode && <div className="restaurant-preview-banner"><span aria-hidden="true">i</span><p><strong>Admin monitoring view.</strong> Customer information is illustrative and read-only.</p></div>}
-        {!monitorMode && <div className="restaurant-preview-banner"><span aria-hidden="true">i</span><p><strong>Frontend preview.</strong> Restaurants, messages, favorites, and orders are sample browser-local data; actions do not contact restaurants or payment services.</p></div>}
-        <CustomerNotice notice={portalState.error ? { type: "error", message: portalState.error } : null} />
-        {content}
-        <footer className="restaurant-footer"><span>© 2026 DashBite</span><span>Customer portal · Preview data</span></footer>
-      </div>
-    </main>
-  </div>;
+      );
+    },
+    browse: ({ q }) => {
+      const list = findRestaurants(q);
+      return selectedRestaurant ? menuView(selectedRestaurant) : list.length ? cards(list, openMenu) : <Empty icon="🔎">No restaurants match your search.</Empty>;
+    },
+    favorites: ({ q }) => { const list = findRestaurants(q).filter((restaurant) => favs.includes(restaurant.name)); return selectedRestaurant ? menuView(selectedRestaurant) : list.length ? cards(list, openMenu) : <Empty icon="🤍">No favorites match. Tap a heart on a restaurant to save it.</Empty>; },
+    orders: () => orders.length ? <section className="card"><h3>My Orders</h3>{[...orders].reverse().map((order) => <div className="li" key={order.id}><div className="f"><b>{order.id} · {order.restaurant}</b><small>{order.items.map((item) => `${item.quantity}× ${item.name}`).join(", ")}</small><small>₱{order.total}</small></div><span className="tg w">{order.status.replaceAll("_", " ")}</span></div>)}</section> : <Empty icon="🛍️">You have no orders yet. Browse restaurants to place your first order.</Empty>,
+    reviews: () => <section className="card"><h3>Reviews</h3>
+      {completedOrders.length > 0 && <form className="local-form" onSubmit={submitReview}><label>Completed order<select className="text-input" value={reviewOrder} onChange={(event) => setReviewOrder(event.target.value)} required><option value="">Select an order</option>{completedOrders.map((order) => <option key={order.id} value={order.id}>{order.id} · {order.restaurant}</option>)}</select></label><label>Rating<select className="text-input" value={rating} onChange={(event) => setRating(event.target.value)}><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select></label><label>Your review<textarea className="text-input" value={reviewText} onChange={(event) => setReviewText(event.target.value)} maxLength={500} required /></label><button className="btn">Save Review</button></form>}
+      {reviews.filter((review) => review.author === props.user.name).map((review) => <div className="li" key={review.id}><div className="f"><b>{review.restaurant} · {"★".repeat(review.rating)}</b><small>{review.text}</small></div><Tag tone={review.status === "HIDDEN" ? "w" : "a"}>{review.status}</Tag></div>)}
+      {!completedOrders.length && !reviews.some((review) => review.author === props.user.name) && <Empty icon="⭐">Reviews unlock after a delivery is marked complete.</Empty>}
+    </section>,
+    chat: () => <section className="card"><h3>Restaurant Chat</h3>
+      {orders.length ? <><form className="local-form" onSubmit={sendMessage}><label>Order<select className="text-input" value={chatOrder} onChange={(event) => setChatOrder(event.target.value)} required><option value="">Select an order</option>{orders.map((order) => <option key={order.id} value={order.id}>{order.id} · {order.restaurant}</option>)}</select></label><label>Message<textarea className="text-input" value={chatText} onChange={(event) => setChatText(event.target.value)} maxLength={500} required /></label><button className="btn">Send Message</button></form>
+        {messages.filter((message) => orders.some((order) => order.id === message.orderId)).map((message) => <div className="li" key={message.id}><div className="f"><b>{message.name} · {message.orderId}</b><small>{message.text}</small></div><small>{new Date(message.createdAt).toLocaleString()}</small></div>)}</> : <Empty icon="💬">Place an order to start a conversation with the restaurant.</Empty>}
+    </section>,
+  };
+  return <PortalFrame role="CUSTOMER" {...props} placeholder="Search for food, restaurants…" screens={screens} />;
 }

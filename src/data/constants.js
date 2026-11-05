@@ -1,5 +1,7 @@
+// Canonical role and workflow values for frontend demo data.
 export const ROLES = Object.freeze(["CUSTOMER", "RESTAURANT", "RIDER", "ADMIN"]);
 
+// Order lifecycle and payment/dispatch enums used by future API-backed flows.
 export const ORDER_STATUSES = Object.freeze([
   "PENDING",
   "ACCEPTED",

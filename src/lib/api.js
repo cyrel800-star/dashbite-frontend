@@ -1,5 +1,6 @@
 let apiBase = getInitialApiBase();
 
+// Typed error shape used by the optional future API integration.
 export class ApiError extends Error {
   constructor(message, { status = 0, code = "API_ERROR", details = null } = {}) {
     super(message);
@@ -10,12 +11,14 @@ export class ApiError extends Error {
   }
 }
 
+// Resolve the API URL from an explicit query override, saved setting, or default.
 function getInitialApiBase() {
   const requestedBase = new URLSearchParams(window.location.search).get("api");
   const savedBase = window.localStorage.getItem("dashbite.apiBase");
   return (requestedBase || savedBase || "/api").trim().replace(/\/+$/, "") || "/api";
 }
 
+// Send JSON requests and normalize network, response, and HTTP errors.
 async function request(path, { method = "GET", body } = {}) {
   let response;
   try {
@@ -61,6 +64,7 @@ async function request(path, { method = "GET", body } = {}) {
   return data;
 }
 
+// API endpoints retained for later backend integration; the current demo does not call them.
 export const api = Object.freeze({
   createOrder(payload) {
     return request("/orders", { method: "POST", body: payload });
@@ -70,6 +74,7 @@ export const api = Object.freeze({
   },
 });
 
+// Read and validate the optional API base URL configuration.
 export function getApiBaseUrl() {
   return apiBase;
 }

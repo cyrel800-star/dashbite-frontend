@@ -1,6 +1,0 @@
-.dashbite .profile-photo-editor { background: #fffaf7; border: 1px solid #f2e7e1 !important; border-radius: 15px; max-width: 620px; }
-.dashbite .profile-photo-preview { width: 88px; height: 88px; flex: 0 0 88px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: #ffe8dc; color: #c94d20; font-size: 25px; font-weight: 700; border: 3px solid #fff; box-shadow: 0 2px 12px rgba(0,0,0,.1); }
-.dashbite .profile-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-.dashbite .profile-photo-copy strong { color: #292929; font-size: 14px; }
-.dashbite .profile-photo-copy small { font-size: 11px; line-height: 1.5; }
-.dashbite .profile-photo-editor .card-body { padding: 16px; }
