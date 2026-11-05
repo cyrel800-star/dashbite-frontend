@@ -1,0 +1,18 @@
+.dashbite .btn-primary, .dashbite .btn-primary:focus { --bs-btn-bg: var(--dashbite-orange); --bs-btn-border-color: var(--dashbite-orange); --bs-btn-hover-bg: var(--dashbite-orange-dark); --bs-btn-hover-border-color: var(--dashbite-orange-dark); --bs-btn-active-bg: var(--dashbite-orange-dark); --bs-btn-active-border-color: var(--dashbite-orange-dark); }
+.dashbite .btn-outline-primary { --bs-btn-color: var(--dashbite-orange-dark); --bs-btn-border-color: var(--dashbite-orange); --bs-btn-hover-bg: var(--dashbite-orange); --bs-btn-hover-border-color: var(--dashbite-orange); }
+.dashbite .form-control:focus, .dashbite .form-select:focus { border-color: rgba(255,107,53,.6); box-shadow: 0 0 0 .2rem rgba(255,107,53,.13); }
+.dashbite .restaurant-profile-avatar, .dashbite .customer-profile-intro > span, .dashbite .rider-profile-avatar { overflow: hidden; display: inline-flex; align-items: center; justify-content: center; background: #fff0e8; color: var(--dashbite-orange-dark); }
+.dashbite .restaurant-profile-avatar img, .dashbite .customer-profile-intro > span img, .dashbite .rider-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.dashbite .restaurant-profile-hero, .dashbite .rider-profile-hero { border-radius: 18px; box-shadow: var(--dashbite-shadow); }
+.dashbite .restaurant-profile-cover { background: linear-gradient(120deg, #2d2d2d, #48413d); }
+.dashbite .customer-profile-panel, .dashbite .rider-profile-panel, .dashbite .restaurant-form-grid, .dashbite .admin-settings-panel { padding: 22px; }
+.dashbite .customer-profile-form, .dashbite .rider-profile-form, .dashbite .restaurant-form-grid, .dashbite .admin-settings-form { gap: 18px; }
+.dashbite .customer-field input, .dashbite .customer-field textarea, .dashbite .rider-field input, .dashbite .rider-field select, .dashbite .restaurant-field input, .dashbite .restaurant-field textarea, .dashbite .admin-field input { border: 1px solid #e6e6e6; border-radius: 10px; background: #fff; min-height: 44px; padding: 10px 12px; }
+.dashbite .button-primary, .dashbite .button.button-primary { background: var(--dashbite-orange); color: #fff; border-radius: 10px; }
+.dashbite .button-primary:hover, .dashbite .button.button-primary:hover { background: var(--dashbite-orange-dark); }
+.dashbite .restaurant-preview-banner, .dashbite .admin-preview-banner { border-radius: 12px; border: 1px solid #ffdfce; background: #fff0e6; color: #743018; }
+.dashbite .metric-card, .dashbite .admin-metric { border-radius: 14px; border: 1px solid #ededed; box-shadow: 0 8px 24px rgba(0,0,0,.045); }
+.dashbite .metric-icon { color: var(--dashbite-orange); }
+.dashbite .admin-sidebar .restaurant-nav-link { min-height: 46px; }
+.dashbite .admin-main-inner { padding-top: 18px; }
+.dashbite .admin-section-heading h2, .dashbite .restaurant-section-heading h2, .dashbite .customer-section-heading h2, .dashbite .rider-section-heading h2 { letter-spacing: -.03em; }

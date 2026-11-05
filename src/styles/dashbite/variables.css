@@ -1,0 +1,16 @@
+:root {
+  --bs-primary: #ff6b35;
+  --bs-primary-rgb: 255, 107, 53;
+  --bs-link-color: #e95623;
+  --bs-link-hover-color: #c94318;
+  --bs-border-radius: 0.8rem;
+  --bs-border-radius-lg: 1rem;
+  --dashbite-orange: #ff6b35;
+  --dashbite-orange-dark: #e95623;
+  --dashbite-charcoal: #2d2d2d;
+  --dashbite-ink: #242424;
+  --dashbite-muted: #77736f;
+  --dashbite-line: #eeeae7;
+  --dashbite-soft: #fff7f2;
+  --dashbite-shadow: 0 12px 34px rgba(45, 45, 45, .07);
+}

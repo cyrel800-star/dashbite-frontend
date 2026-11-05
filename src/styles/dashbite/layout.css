@@ -1,0 +1,152 @@
+.dashbite { font-family: "Poppins", Inter, system-ui, sans-serif; color: var(--dashbite-ink); }
+.dashbite .restaurant-shell, .dashbite.restaurant-shell { background: #f6f7f8; }
+.dashbite .restaurant-sidebar { background: #242424; color: #fff; border-right: 0; box-shadow: 8px 0 30px rgba(0,0,0,.05); }
+.dashbite .restaurant-brand, .dashbite .admin-brand, .dashbite .customer-brand, .dashbite .rider-brand { color: #fff; }
+.dashbite .restaurant-nav-link { color: #e8e8e8; border-radius: 12px; margin: 4px 12px; transition: .18s ease; }
+.dashbite .restaurant-nav-link:hover { color: #fff; background: rgba(255,255,255,.09); }
+.dashbite .restaurant-nav-link.is-active { color: #fff; background: var(--dashbite-orange); box-shadow: 0 8px 18px rgba(255,107,53,.2); }
+.dashbite .restaurant-nav-label, .dashbite .admin-nav-label { color: #aaa; letter-spacing: .13em; }
+.dashbite .restaurant-main { background: #f6f7f8; }
+.dashbite .restaurant-topbar { background: rgba(255,255,255,.96); border-bottom: 1px solid #ececec; box-shadow: 0 3px 16px rgba(0,0,0,.025); }
+.dashbite .restaurant-main-inner { max-width: 1600px; }
+.dashbite .restaurant-panel, .dashbite .customer-panel, .dashbite .rider-panel, .dashbite .admin-panel { border: 1px solid #ececec; border-radius: 16px; box-shadow: var(--dashbite-shadow); background: #fff; }
+.dashbite .restaurant-page-content, .dashbite .customer-page-content, .dashbite .rider-page-content, .dashbite .admin-page-content { gap: 22px; }
+.dashbite .restaurant-footer { color: #777; }
+.dashbite .home-page, .dashbite.home-page { background: #fafafa; }
+.dashbite .login-page, .dashbite .signup-page, .dashbite .admin-login-page { background: #f7f7f7; }
+@media (max-width: 767.98px) {
+  .dashbite .restaurant-main-inner { padding-left: 16px; padding-right: 16px; }
+  .dashbite .restaurant-topbar { padding-inline: 16px; }
+  .dashbite .restaurant-topbar-title { font-size: 14px; }
+}
+.dashbite .sidebar { background: #242424; border-right: 0; color: #fff; }
+.dashbite .sidebar .brand { color: #fff; }
+.dashbite .sidebar-label { color: #a9a9a9; }
+.dashbite .side-link { color: #e8e8e8; border-radius: 11px; }
+.dashbite .side-link:hover { color: #fff; background: rgba(255,255,255,.08); }
+.dashbite .side-link.active { color: #fff; background: var(--dashbite-orange); }
+.dashbite .help-card { background: #343434; border: 1px solid #444; color: #fff; }
+.dashbite .help-card p, .dashbite .sidebar-footer { color: #b8b8b8; }
+.dashbite .app-main { background: #f6f7f8; }
+.dashbite .app-header { background: #fff; padding-inline: 22px; border-radius: 0 0 14px 14px; }
+.dashbite .page-heading { margin-top: 28px; }
+.dashbite .page-heading h1 { color: #242424; font-weight: 700; }
+.dashbite .metric-card, .dashbite .panel, .dashbite .activity-card { border: 1px solid #ececec; border-radius: 15px; box-shadow: var(--dashbite-shadow); }
+.dashbite .metric-card { background: #fff; }
+.dashbite .panel-heading { border-bottom-color: #efefef; }
+.dashbite .table-wrap { border-radius: 12px; }
+.dashbite .restaurant-account-chip > i { overflow: hidden; }
+.dashbite .restaurant-account-chip > i img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.dashbite .restaurant-profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.dashbite .customer-profile-intro > span { overflow: hidden; }
+.dashbite .customer-profile-intro > span img { width: 100%; height: 100%; object-fit: cover; }
+.dashbite .rider-profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.dashbite .restaurant-sidebar-identity { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.1); }
+.dashbite .restaurant-sidebar-identity strong { color: #fff; }
+.dashbite .restaurant-sidebar-identity span { color: #c7c7c7; }
+.dashbite .restaurant-sidebar-identity .restaurant-profile-avatar { border-radius: 50%; }
+.dashbite .restaurant-workspace-link { color: #f2f2f2; }
+.dashbite .restaurant-sidebar-bottom > span { color: #aaa; }
+.dashbite .restaurant-nav-link { padding: 12px 14px; }
+.dashbite .restaurant-profile-cover { border-radius: 15px 15px 0 0; }
+.dashbite .restaurant-profile-summary { background: #fff; }
+.dashbite .restaurant-profile-hero { overflow: hidden; }
+@media (max-width: 991.98px) {
+  .dashbite .restaurant-shell { grid-template-columns: 210px minmax(0,1fr); }
+  .dashbite .restaurant-main-inner { padding-inline: 20px; }
+}
+@media (max-width: 767.98px) {
+  .dashbite .restaurant-shell { display: block; }
+  .dashbite .restaurant-sidebar { position: relative; height: auto; min-height: 0; padding: 14px; }
+  .dashbite .restaurant-sidebar-identity, .dashbite .restaurant-sidebar-bottom { display: none; }
+  .dashbite .restaurant-nav { display: flex; overflow-x: auto; gap: 5px; padding: 10px 0 0; }
+  .dashbite .restaurant-nav-link { flex: 0 0 auto; margin: 0; white-space: nowrap; }
+  .dashbite .restaurant-topbar { min-height: 62px; gap: 10px; }
+  .dashbite .restaurant-topbar-actions { gap: 8px; }
+  .dashbite .restaurant-account-chip { max-width: 150px; }
+  .dashbite .restaurant-main-inner { padding: 16px 14px 24px; }
+  .dashbite .app-shell { display: block; }
+  .dashbite .sidebar { min-height: auto; padding: 12px; }
+  .dashbite .sidebar .brand { padding: 0; }
+  .dashbite .side-nav { display: flex; overflow-x: auto; gap: 6px; padding-top: 8px; }
+  .dashbite .side-link { flex: 0 0 auto; white-space: nowrap; }
+  .dashbite .sidebar-bottom { display: none; }
+  .dashbite .app-main { padding: 0 14px 24px; }
+  .dashbite .app-header { min-height: 60px; padding-inline: 0; }
+}
+
+
+/* ===== ADMIN SIDEBAR CONTRAST FIX =====
+   The legacy admin rules in assets/css/styles.css force navigation text to black.
+   These scoped overrides restore readable white navigation on the charcoal sidebar.
+*/
+.dashbite.admin-shell .admin-sidebar {
+  width: 248px;
+  min-width: 248px;
+  background: #242424;
+  color: #fff;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-brand,
+.dashbite.admin-shell .admin-sidebar .admin-brand > span {
+  color: #fff !important;
+  opacity: 1;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-brand .brand-accent {
+  color: #ff6b35 !important;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav-label {
+  color: #b8b8b8 !important;
+  margin: 30px 10px 14px;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link,
+.dashbite.admin-shell .admin-sidebar .restaurant-nav-link {
+  color: #f2f2f2 !important;
+  background: transparent;
+  min-height: 46px;
+  margin: 5px 8px;
+  padding: 0 14px;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 12px;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link > span[aria-hidden="true"],
+.dashbite.admin-shell .admin-sidebar .restaurant-nav-link > span[aria-hidden="true"] {
+  color: #f2f2f2 !important;
+  width: 22px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link:hover,
+.dashbite.admin-shell .admin-sidebar .restaurant-nav-link:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, .10);
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link.is-active,
+.dashbite.admin-shell .admin-sidebar .restaurant-nav-link.is-active {
+  color: #fff !important;
+  background: #ff6b35 !important;
+  box-shadow: 0 7px 18px rgba(255, 107, 53, .20);
+}
+
+.dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link.is-active > span[aria-hidden="true"],
+.dashbite.admin-shell .admin-sidebar .restaurant-nav-link.is-active > span[aria-hidden="true"] {
+  color: #fff !important;
+}
+
+@media (max-width: 767.98px) {
+  .dashbite.admin-shell .admin-sidebar {
+    width: auto;
+    min-width: 0;
+  }
+  .dashbite.admin-shell .admin-sidebar .admin-nav .restaurant-nav-link {
+    color: #f2f2f2 !important;
+  }
+}
